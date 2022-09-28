@@ -1,0 +1,59 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CHECK SELLERS PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'home' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="title-wrapper">KUPUJĄCY</div>
+
+<div class="check-incomming-wrapper">
+    <div class="back-div">
+        <a href="{% url 'create-buyer' %}">
+            <input type="button" value="UTWÓRZ" name="" id="">
+        </a>
+    </div>
+
+    {% if buyers %}
+
+
+    <table class="overwiew-table centered-table">
+        <tr class="table-header">
+            <th>Nr</th>
+            <th>Kupujący</th>
+            <th></th>
+            <th></th>
+        </tr>
+        
+        {% for buyer in buyers %}
+        
+        <tr>
+            <th>{{forloop.counter}}</th>
+            <th>{{buyer.name}}</th>
+            <th class="entry-in"><a href="{% url 'edit-buyer' buyer.id %}">EDYTUJ</a></th>
+            <th class="entry-in"><a href="{% url 'delete-buyer' buyer.id %}">USUŃ</a></th>
+        </tr>
+        
+        {% endfor %}
+        
+    </table>
+
+
+    {% else %}
+
+    <div class="no-shoes">
+        NIE UTWORZYŁEŚ JESZCZE KUPUJĄCYCH
+    </div>
+
+    {% endif %}
+</div>
+
+{% endblock content %}

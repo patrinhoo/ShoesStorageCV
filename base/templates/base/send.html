@@ -1,0 +1,35 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE INCOMMING PAGE - OPTIONS -->
+<div class="create-incomming-wrapper">
+    <div class="link">
+        <div>
+            <a href="{% url 'send-single' %}">
+                WYŚLIJ POJEDYNCZĄ PRZESYŁKĘ
+            </a>
+        </div>
+    </div>
+
+    <div class="link">
+        <div>
+            <a href="{% url 'create-send-csv' %}">
+                WYŚLIJ Z PLIKU CSV
+            </a>
+        </div>
+    </div>
+
+    <div class="link">
+        <div>
+            <a href="{% url 'add-to-archives-csv' %}">
+                DODAJ DO ARCHIWUM Z PLIKU CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

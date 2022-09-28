@@ -1,0 +1,27 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE INCOMMING PAGE - OPTIONS -->
+<div class="create-incomming-wrapper">
+    <div class="link">
+        <div>
+            <a href="{% url 'input-missing-archives' %}">
+                UZUPEŁNIJ DANE - ARCHIWUM
+            </a>
+        </div>
+    </div>
+
+    <div class="link">
+        <div>
+            <a href="{% url 'input-missing-storage' %}">
+                UZUPEŁNIJ DANE - MAGAZYN
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

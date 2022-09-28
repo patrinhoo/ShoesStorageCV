@@ -1,0 +1,32 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-single-wrapper">
+    
+    <form action="" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Edytuj" name="" id="">
+        <a href="{% url 'buyers' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+        
+        <div class="title-wrapper">EDYTUJ KUPUJĄCEGO</div>
+
+        {% for field in form %}
+        <div class="form-field">
+            <div class="label">{{field.label}}</div>
+            <div class="field">{{field}}</div>
+        </div>
+        {% endfor %}
+    </form>
+
+</div>
+
+
+
+{% endblock content %}

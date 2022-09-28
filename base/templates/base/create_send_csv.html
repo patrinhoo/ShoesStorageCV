@@ -1,0 +1,54 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-csv-wrapper">
+    <div class="from-csv-header">
+        KOLEJNOŚĆ DANYCH W PLIKU CSV
+    </div>
+
+    <form action="" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <table class="columns-table">
+            <tr class="table-header">
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Nazwa produktu</th>
+                <th>Rozmiar</th>
+                <th>Data zamówienia</th>
+                <th>Sprzedawca</th>
+                <th>Komentarz</th>
+                <th>Data przyjęcia</th>
+                <th>Nr faktury kupna</th>
+                <th>Data faktury kupna</th>
+                <th>Data wydania</th>
+                <th>Nr faktury sprzedaży</th>
+                <th>Data faktury sprzedaży</th>
+                <th>Data wpływu na konto</th>
+                <th>Cena sprzedaży</th>
+                <th>Kupujący</th>
+                <th>Nr listu przewozowego</th>
+                <th>Nr StockX</th>
+                <th>CW</th>
+            </tr>
+        </table>
+
+        {% for field in form %}
+        {{ field }}
+        {% endfor %}
+
+        <input type="submit" value="Uwtórz" name="" id="">
+        <a href="{% url 'send' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+    </form>
+</div>
+
+
+
+{% endblock content %}

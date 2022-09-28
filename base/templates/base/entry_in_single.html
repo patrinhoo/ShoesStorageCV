@@ -1,0 +1,64 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CHECK INCOMMING PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'entry-in' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="filter-wrapper">
+    <form method="GET" action="{% url 'entry-in-single' %}">
+        <label for="nane">Nazwa</label><br>
+        <input name="n" id="name" type="text" value="{{request.GET.n}}" placeholder="Wpisz nazwę buta"><br>
+        <label for="seller">Sprzedawca</label><br>
+        <input name="s" id="seller" type="text" value="{{request.GET.s}}" placeholder="Wpisz nazwę sprzedawcy"><br>
+
+        <label for="order_date">Data zamówienia</label><br>
+        <input name="od" id="order_date" type="date" value="{{request.GET.od}}" placeholder="Wybierz datę zamówienia"><br>
+
+        <input type="submit" value="SZUKAJ">
+    </form>
+</div>
+
+<div class="check-incomming-wrapper">
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th></th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Nazwa produktu</th>
+            <th>Rozmiar</th>
+            <th>Data zamówienia</th>
+            <th>Sprzedawca</th>
+            <th>Komentarz</th>
+        </tr>
+    
+
+        {% for shoe in incommings %}
+
+        <tr>
+            <th class="entry-in"><a href="{% url 'create-single-entry-in' shoe.id %}">PRZYJMIJ</a></th>
+            <th>{{shoe.email}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.name}}</th>
+            <th>{{shoe.size}}</th>
+            <th>{{shoe.order_date|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
+        </tr>
+
+        {% endfor %}
+        
+    </table>
+
+</div>
+
+{% endblock content %}

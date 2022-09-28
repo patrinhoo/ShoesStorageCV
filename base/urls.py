@@ -1,0 +1,96 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.HomeView.as_view(), name='home'),
+    path('login/', views.LoginPage.as_view(), name='login'),
+    path('logout/', views.Logout.as_view(), name='logout'),
+
+    path('create_incomming/', views.CreateIncomming.as_view(),
+         name='create-incomming'),
+    path('create_single_incomming/', views.CreateSingleIncomming.as_view(),
+         name='create-single-incomming'),
+    path('create_incomming_csv/', views.CreateIncommingCsv.as_view(),
+         name='create-incomming-csv'),
+    path('created_incommings/', views.CreatedIncommings.as_view(),
+         name='created-incommings'),
+    path('check_incomming/', views.CheckIncomming.as_view(), name='check-incomming'),
+
+    path('entry_in/', views.EntryIn.as_view(), name='entry-in'),
+    path('entry_in_single/', views.EntryInSingle.as_view(), name='entry-in-single'),
+    path('create_single_entry_in/<str:pk>/', views.CreateSingleEntryIn.as_view(),
+         name='create-single-entry-in'),
+    path('entry_in_csv/', views.EntryInCsv.as_view(), name='entry-in-csv'),
+    path('created_entry_ins/', views.CreatedEntryIns.as_view(),
+         name='created-entry-ins'),
+    path('add_to_storage_csv/', views.AddToStorageCsv.as_view(),
+         name='add-to-storage-csv'),
+    path('check_storage/', views.CheckStorage.as_view(), name='check-storage'),
+
+    path('send/', views.Send.as_view(), name='send'),
+    path('send_single/', views.SendSingle.as_view(), name='send-single'),
+    path('create_single_send/<str:pk>/', views.CreateSingleSend.as_view(),
+         name='create-single-send'),
+    path('create_send_csv/', views.CreateSendCsv.as_view(), name='create-send-csv'),
+    path('created_sends/', views.CreatedSends.as_view(),
+         name='created-sends'),
+    path('add_to_archives_csv/', views.AddToArchivesCsv.as_view(),
+         name='add-to-archives-csv'),
+    path('archives/', views.Archives.as_view(), name='archives'),
+
+    path('check_missing_data/', views.CheckMissingData.as_view(),
+         name='check-missing-data'),
+    path('input_missing_data/', views.InputMissingData.as_view(),
+         name='input-missing-data'),
+
+
+    path('input_missing_archives/', views.InputMissingArchives.as_view(),
+         name='input-missing-archives'),
+    path('input_missing_storage/', views.InputMissingStorage.as_view(),
+         name='input-missing-storage'),
+    path('input_data_archives/<str:pk>/', views.InputDataArchives.as_view(),
+         name='input-data-archives'),
+    path('input_data_storage/<str:pk>/', views.InputDataStorage.as_view(),
+         name='input-data-storage'),
+
+    path('edit_incomming/<str:pk>/', views.EditIncomming.as_view(),
+         name='edit-incomming'),
+    path('delete_incomming/<str:pk>/', views.DeleteIncomming.as_view(),
+         name='delete-incomming'),
+    path('edit_storage/<str:pk>/', views.EditStorage.as_view(),
+         name='edit-storage'),
+    path('delete_storage/<str:pk>/', views.DeleteStorage.as_view(),
+         name='delete-storage'),
+    path('edit_archives/<str:pk>/', views.EditArchives.as_view(),
+         name='edit-archives'),
+    path('delete_archives/<str:pk>/', views.DeleteArchives.as_view(),
+         name='delete-archives'),
+
+    path('incomming_csv', views.incomming_csv, name='incomming-csv'),
+    path('storage_csv', views.storage_csv, name='storage-csv'),
+    path('archives_csv', views.archives_csv, name='archives-csv'),
+
+    path('missing_storage_csv', views.missing_storage_csv,
+         name='missing-storage-csv'),
+    path('missing_archives_csv', views.missing_archives_csv,
+         name='missing-archives-csv'),
+
+    path('sellers/', views.Sellers.as_view(), name='sellers'),
+    path('create_seller/',
+         views.CreateSeller.as_view(), name='create-seller'),
+    path('delete_seller/<str:pk>/',
+         views.DeleteSeller.as_view(), name='delete-seller'),
+    path('edit_seller/<str:pk>/',
+         views.EditSeller.as_view(), name='edit-seller'),
+
+    path('buyers/', views.Buyers.as_view(), name='buyers'),
+    path('create_buyer/', views.CreateSeller.as_view(), name='create-buyer'),
+    path('delete_buyer/<str:pk>/',
+         views.DeleteBuyer.as_view(), name='delete-buyer'),
+    path('edit_buyer/<str:pk>/',
+         views.EditBuyer.as_view(), name='edit-buyer'),
+
+    path('stats/', views.Stats.as_view(), name='stats'),
+    path('info/', views.Info.as_view(), name='info'),
+
+]

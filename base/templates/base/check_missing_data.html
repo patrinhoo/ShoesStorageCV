@@ -1,0 +1,152 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CHECK INCOMMING PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'home' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="title-wrapper">BRAKUJĄCE DANE - ARCHIWUM</div>
+
+{% if missing_data_archives %}
+<div class="to-csv">
+    <a href="{% url 'missing-archives-csv' %}">
+        <input type="button" value="POBIERZ CSV" name="" id="">
+    </a>
+</div>
+{% endif %}
+
+<div class="check-incomming-wrapper">
+    {% if missing_data_archives %}
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th>Nr magazynowy</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Nazwa produktu</th>
+            <th>Rozmiar</th>
+            <th>Data zamówienia</th>
+            <th>Sprzedawca</th>
+            <th>Komentarz</th>
+            <th>Data przyjęcia</th>
+            <th>Nr faktury kupna</th>
+            <th>Data faktury kupna</th>
+            <th>Data wydania</th>
+            <th>Nr faktury sprzedaży</th>
+            <th>Data faktury sprzedaży</th>
+            <th>Data wpływu na konto</th>
+            <th>Cena sprzedaży</th>
+            <th>Kupujący</th>
+            <th>Nr listu przewozowego</th>
+            <th>Nr StockX</th>
+            <th>CW</th>
+        </tr>
+    
+
+        {% for shoe in missing_data_archives %}
+
+        <tr>
+            <th>{{shoe.storage_nr|default:"--"}}</th>
+            <th>{{shoe.email}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.name}}</th>
+            <th>{{shoe.size}}</th>
+            <th>{{shoe.order_date|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
+            <th>{{shoe.entry_date|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_date|default:"--"}}</th>
+            <th>{{shoe.exit_date|default:"--"}}</th>
+            <th>{{shoe.sell_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.sell_invoice_date|default:"--"}}</th>
+            <th>{{shoe.money_income_date|default:"--"}}</th>
+            <th>{{shoe.sell_price|default:"--"}}</th>
+            <th>{{shoe.buyer|default:"--"}}</th>
+            <th>{{shoe.tracking_nr|default:"--"}}</th>
+            <th>{{shoe.stockx_nr|default:"--"}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
+        </tr>
+
+        {% endfor %}
+        
+    </table>
+
+    {% else %}
+
+    <div class="no-shoes">
+        WSZYSTKIE BUTY W ARCHIWUM MAJĄ UZUPEŁNIONE DANE
+    </div>
+
+    {% endif %}
+
+</div>
+
+<div class="title-wrapper">BRAKUJĄCE DANE - MAGAZYN</div>
+
+{% if missing_data_storage %}
+<div class="to-csv">
+    <a href="{% url 'missing-storage-csv' %}">
+        <input type="button" value="POBIERZ CSV" name="" id="">
+    </a>
+</div>
+{% endif %}
+
+<div class="check-incomming-wrapper">
+    {% if missing_data_storage %}
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th>Nr magazynowy</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Nazwa produktu</th>
+            <th>Rozmiar</th>
+            <th>Data zamówienia</th>
+            <th>Sprzedawca</th>
+            <th>Komentarz</th>
+            <th>Data przyjęcia</th>
+            <th>Nr faktury kupna</th>
+            <th>Data faktury kupna</th>
+        </tr>
+    
+
+        {% for shoe in missing_data_storage %}
+
+        <tr>
+            <th>{{shoe.id}}</th>
+            <th>{{shoe.email}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.name}}</th>
+            <th>{{shoe.size}}</th>
+            <th>{{shoe.order_date|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
+            <th>{{shoe.entry_date|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_date|default:"--"}}</th>
+        </tr>
+
+        {% endfor %}
+        
+    </table>
+
+    {% else %}
+
+    <div class="no-shoes">
+        WSZYSTKIE BUTY W MAGAZYNIE MAJĄ UZUPEŁNIONE DANE
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}

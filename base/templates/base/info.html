@@ -1,0 +1,206 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CHECK INCOMMING PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'home' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="title-wrapper">INFORMACJE</div>
+
+<div class="check-incomming-wrapper">
+    <div class="info-div">
+        <div class="info-title">
+            O aplikacji.
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            Aplikacja służy do obsługi magazynu. Informacje które możesz tutaj znaleźć dotyczą: nadchodzących przesyłek, przesyłek znajdujących się na magazynie oraz sprzedanych.
+            Aplikacja sprawdza brakujące dane za Ciebie, tak, abyś nie musiał wszystkiego robić sam.
+            Możesz również zobaczyć jak rozwija się twój biznes w zakładce statystyki.
+        </div>
+    </div>
+
+    <div class="info-div">
+        <div class="info-title">
+            Jak utworzyć nadchodzącą przesyłkę?
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            Nadchodzące przesyłki można utworzyć na dwa sposoby: 
+            <ul>
+                <li>pojedynczo - za pomocą formularza</li>
+                <li>kilka na raz - z pliku CSV</li> 
+            </ul>
+            Formularz który należy wypełnić wygląda następująco:
+
+            <img src="{% static 'media/single_incomming.PNG' %}" class="info-img" alt="">
+            
+            Tworząc przesyłki z pliku CSV pamiętaj aby zachować odpowiednią kolejność kolumn:
+            
+            <img src="{% static 'media/incomming_csv.PNG' %}" class="info-wide-img" alt="">
+        </div>
+    </div>
+
+    <div class="info-div">
+        <div class="info-title">
+            Jak dodać przesyłkę na magazyn?
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            Przyjąć przesyłki na magazyn można na 3 sposoby: 
+            <ul>
+                <li>pojedynczo - za pomocą formularza (przyjęcie nadchodzącej przesyłki)</li>
+                <li>kilka na raz - z pliku CSV (przyjęcie nadchodzących przesyłek)</li>
+                <li>kilka na raz - z pliku CSV (dodanie przesyłek bezpośrednio na magazyn)</li>
+            </ul>
+            Aby przyjąć pojedynczą przesyłkę najpierw trzeba wybrać ją z listy nadchodzących przesyłek:
+
+            <img src="{% static 'media/single_entry.PNG' %}" class="info-wide-img" alt="">
+            
+            A następnie wypełnić formularz:
+            
+            <img src="{% static 'media/create_single_entry.PNG' %}" class="info-wide-img" alt="">
+            
+            Aby przyjąć przesyłki z pliku CSV pamiętaj, aby kolumny:
+            <ul>
+                <li>Email</li>
+                <li>Cena kupna</li>
+                <li>Nazwa produktu</li>
+                <li>Rozmiar</li>
+                <li>Data zamówienia</li>
+                <li>Sprzedawca</li>
+                <li>Komentarz</li>
+            </ul>
+            zawierały dane utworzonej wcześniej nadchodzącej przesyłki.
+            Jeśli dane nie będą się pokrywały, przesyłka nie zostanie przyjęta.
+            Podanie Nr faktury kupna oraz daty faktury kupna na tym etapie nie jest konieczne, ale dobrze, aby zostały później uzupełnione (znajdziesz je w brakujących danych).
+            
+            Kolejność kolumn pliku CSV jest standardowo wyświetlana na stronie:
+            <img src="{% static 'media/create_entry_csv.PNG' %}" class="info-wide-img" alt="">
+
+            Jeżeli nie została utworzona nadchodząca przesyłka a chcesz dodać przesyłkę bezpośrednio na magazyn, skorzystaj z trzeciej opcji.
+            W ten sposób dane w pliku CSV nie muszą odpowiadać istniejącej nadchodzącej przesyłce, a zostanie ona dodana bezpośrednio na magazyn.
+            Pamiętaj o kolejności kolumn, która standardowo wyświetla się na stronie:
+
+            <img src="{% static 'media/create_instorage_csv.PNG' %}" class="info-wide-img" alt="">
+
+        </div>
+    </div>
+    
+    <div class="info-div">
+        <div class="info-title">
+            Jak dodać przesyłkę do archiwum?
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            Wysłać przesyłkę można na 3 sposoby: 
+            <ul>
+                <li>pojedynczo - za pomocą formularza (wysłanie przesyłki znajdującej się w magazynie)</li>
+                <li>kilka na raz - z pliku CSV (wysłanie przesyłek z magazynu)</li>
+                <li>kilka na raz - z pliku CSV (dodanie przesyłek bezpośrednio do archiwum)</li>
+            </ul>
+            Aby wysłać pojedynczą przesyłkę najpierw trzeba wybrać ją z listy przesyłek na magazynie:
+
+            <img src="{% static 'media/single_send.PNG' %}" class="info-wide-img" alt="">
+            
+            A następnie wypełnić formularz:
+            
+            <img src="{% static 'media/create_single_send.PNG' %}" class="info-wide-img" alt="">
+            
+            Aby wysłać przesyłki z pliku CSV pamiętaj, aby kolumny:
+            <ul>
+                <li>Email</li>
+                <li>Cena kupna</li>
+                <li>Nazwa produktu</li>
+                <li>Rozmiar</li>
+                <li>Data zamówienia</li>
+                <li>Sprzedawca</li>
+                <li>Komentarz</li>
+                <li>Data przyjęcia</li>
+                <li>Nr faktury kupna</li>
+                <li>Data faktury kupna</li>
+            </ul>
+            zawierały dane przesyłki znajdującej się na magazynie.
+            Jeśli dane nie będą się pokrywały, przesyłka nie zostanie wysłana.
+            Podanie Daty wydania jest konieczne na tym etapie, reszta danych może zostać uzupełniona później (przesyłkę z brakującymi danymi znajdziesz w brakujących danych).
+            
+            Kolejność kolumn pliku CSV jest standardowo wyświetlana na stronie:
+            <img src="{% static 'media/create_send_csv.PNG' %}" class="info-wide-img" alt="">
+
+            Jeżeli chcesz dodać do archiwum przesyłkę która nie znajduje się na magazynie skorzystaj z opcji Dodaj do archiwum z pliku CSV i dodaj przesyłkę bezpośrednio do archiwum.
+            W ten sposób dane w pliku CSV nie muszą odpowiadać przesyłce istniejącej na magazynie, a zostanie ona dodana bezpośrednio do archiwum.
+            Pamiętaj o kolejności kolumn, która standardowo wyświetla się na stronie:
+
+            <img src="{% static 'media/create_archives_csv.PNG' %}" class="info-wide-img" alt="">
+        </div>
+    </div>
+
+    <div class="info-div">
+        <div class="info-title">
+            Brakujące dane.
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            Brakujące dane możesz sprawdzić w zakładce SPRAWDŹ BRAKUJĄCE DANE.
+            Aby uzupełnić dane wejdź w zakładkę UZUPEŁNIJ DANE.
+            Następnie z tabeli wybierz dane której przesyłki chcesz uzupełnić (tabela wygląda podobnie dla uzupełniania danych w magazynie):
+
+            <img src="{% static 'media/missing_data.PNG' %}" class="info-wide-img" alt="">
+
+            Następnie należy uzupełnić dane w wyświetlonym formularzu.
+        </div>
+    </div>
+
+    <div class="info-div">
+        <div class="info-title">
+            Korzystanie z plików CSV.
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            Korzystanie z plików CSV pozwala na tworzenie wielu przesyłek na raz. 
+            Aczkolwiek korzystając z plików CSV pamiętaj o kolejności kolumn - jest ona pokazana na stronie na której wczytujesz plik: 
+            <img src="{% static 'media/incomming_csv.PNG' %}" class="info-wide-img" alt="">
+            Znakiem rozdzielającym kolumny powinien być średnik.
+        </div>
+    </div>
+    
+    <div class="info-div">
+        <div class="info-title">
+            Jak czytać statystyki?
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            W zakładce STATYSTYKI możesz zobaczyć podstawowe statystyki dotyczące twoich zakupów oraz sprzedaży.
+            Przedstawione są one w formie wykresów i zawierają informacje o:
+            <ul>
+                <li>przychodzie, dochodzie, kosztach i podatku w aktualnym miesiącu</li>
+                <li>liczbie kupionych i sprzedanych butów w aktualnym miesiącu</li>
+                <li>dochodzie w ostatnich miesiącach</li>
+                <li>przychodzie i kosztach w ostatnich miesiącach</li>
+                <li>liczbie kupionych butów do poszczególnych sprzedających w ciągu ostatnich 3 miesięcy</li>
+                <li>liczbie sprzedanych butów do poszczególnych kupujących w ciągu ostatnich 3 miesięcy</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-div">
+        <div class="info-title">
+            Sprzedawca i kupujący
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            Sprzedawców i kupujących możesz zobaczyć oraz utworzyć w zakładkach o właśnie takich nazwach. 
+            Pamiętaj, że tworząc nadchodzącą przesyłkę lub wysyłając przesyłkę będziesz mógł wybrać tylko wcześniej utworzonych sprzedawców lub kupujących.
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

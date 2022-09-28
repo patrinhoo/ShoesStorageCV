@@ -1,0 +1,59 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-single-wrapper">
+    
+    <form action="" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Utwórz" name="" id="">
+        <a href="{% url 'send-single' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+        
+        <table class="overwiew-table">
+            <tr class="table-header">
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Nazwa produktu</th>
+                <th>Rozmiar</th>
+                <th>Data zamówienia</th>
+                <th>Sprzedawca</th>
+                <th>Komentarz</th>
+                <th>Data przyjęcia</th>
+                <th>Nr faktury kupna</th>
+                <th>Data faktury kupna</th>
+            </tr>
+    
+            <tr>
+                <th>{{in_storage.email}}</th>
+                <th>{{in_storage.buy_price}}</th>
+                <th>{{in_storage.name}}</th>
+                <th>{{in_storage.size}}</th>
+                <th>{{in_storage.order_date|default:"--"}}</th>
+                <th>{{in_storage.seller|default:"--"}}</th>
+                <th>{{in_storage.comment|default:"--"}}</th>
+                <th>{{in_storage.entry_date|default:"--"}}</th>
+                <th>{{in_storage.buy_invoice_nr|default:"--"}}</th>
+                <th>{{in_storage.buy_invoice_date|default:"--"}}</th>
+            </tr>
+            
+        </table>
+        
+        {% for field in form %}
+        <div class="form-field">
+            <div class="label">{{field.label}}</div>
+            <div class="field">{{field}}</div>
+        </div>
+        {% endfor %}
+    </form>
+
+</div>
+
+
+
+{% endblock content %}

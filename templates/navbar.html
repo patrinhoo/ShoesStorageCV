@@ -1,0 +1,29 @@
+{% load static %}
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="brand-title">
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'home' %}">Shoes Storage</a>
+        {% else %}
+        <a href="{% url 'info' %}">Shoes Storage</a>
+        {% endif %}
+    </div>
+
+
+    <div class="hello">
+        {% if request.user.is_authenticated %}
+            <b>Hello {{request.user}}!</b>
+        {% else %}
+            <b>Hello!</b>
+        {% endif %}
+    </div>
+
+    <div class="navbar-links">
+        {% if request.user.is_authenticated %}
+        <div class="action-btn"><a href="{% url 'logout' %}">WYLOGUJ</a></div>
+        {% else %}
+        <div class="action-btn"><a href="{% url 'login' %}">ZALOGUJ</a></div>
+        {% endif %}
+    </div>
+</nav>

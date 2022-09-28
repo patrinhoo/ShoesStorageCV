@@ -1,0 +1,95 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CHECK INCOMMING PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'input-missing-data' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="title-wrapper">BRAKUJĄCE DANE - MAGAZYN</div>
+
+
+<div class="filter-wrapper">
+    <form method="GET" action="{% url 'input-missing-storage' %}">
+        <label for="nane">Nazwa</label><br>
+        <input name="n" id="name" type="text" value="{{request.GET.n}}" placeholder="Wpisz nazwę buta"><br>
+        <label for="seller">Sprzedawca</label><br>
+        <input name="s" id="seller" type="text" value="{{request.GET.s}}" placeholder="Wpisz nazwę sprzedawcy"><br>
+
+        <label for="order_date">Data zamówienia</label><br>
+        <input name="od" id="order_date" type="date" value="{{request.GET.od}}" placeholder="Wybierz datę zamówienia"><br>
+        <label for="entry_date">Data przyjęcia</label><br>
+        <input name="ed" id="entry_date" type="date" value="{{request.GET.ed}}" placeholder="Wybierz datę przyjęcia"><br>
+
+        <input type="submit" value="SZUKAJ">
+    </form>
+</div>
+
+
+{% if missing_data_storage %}
+<div class="to-csv">
+    <a href="{% url 'missing-storage-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&od={{request.GET.od}}&ed={{request.GET.ed}}">
+        <input type="button" value="POBIERZ CSV" name="" id="">
+    </a>
+</div>
+{% endif %}
+
+<div class="check-incomming-wrapper">
+    {% if missing_data_storage %}
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th></th>
+            <th>Nr magazynowy</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Nazwa produktu</th>
+            <th>Rozmiar</th>
+            <th>Data zamówienia</th>
+            <th>Sprzedawca</th>
+            <th>Komentarz</th>
+            <th>Data przyjęcia</th>
+            <th>Nr faktury kupna</th>
+            <th>Data faktury kupna</th>
+        </tr>
+    
+
+        {% for shoe in missing_data_storage %}
+
+        <tr>
+            <th class="input-data"><a href="{% url 'input-data-storage' shoe.id %}">UZUPEŁNIJ</a></th>
+            <th>{{shoe.id}}</th>
+            <th>{{shoe.email}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.name}}</th>
+            <th>{{shoe.size}}</th>
+            <th>{{shoe.order_date|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
+            <th>{{shoe.entry_date|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_date|default:"--"}}</th>
+        </tr>
+
+        {% endfor %}
+        
+    </table>
+
+    {% else %}
+
+    <div class="no-shoes">
+        WSZYSTKIE BUTY W MAGAZYNIE MAJĄ UZUPEŁNIONE DANE
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}

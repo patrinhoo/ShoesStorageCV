@@ -1,0 +1,30 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- MAIN PAGE - OPTIONS -->
+<div class="check-incomming-wrapper">
+    <div class="login-div">
+        <h1>Login</h1>
+        
+        <form method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="margin">
+                <div class="center">{{field.label}}</div>
+                <div class="center">{{field}}</div>
+            </div>
+            {% endfor %}
+
+            <input class="login-button" type="submit" value="Login">
+
+        </form>
+        
+        <p class="red">Nie masz konta? Napisz na maila na patrinhorybacki@gmail.com</p>
+    </div>
+</div>
+
+{% endblock content %}

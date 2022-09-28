@@ -1,0 +1,89 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-single-wrapper">
+    
+    <form action="" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Aktualizuj" name="" id="">
+        {% if input_missing %}
+        <a href="{% url 'input-missing-archives' %}">
+        {% else %}
+        <a href="{% url 'archives' %}">
+        {% endif %}
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+        
+        <table class="overwiew-table">
+            <tr class="table-header">
+                <th>Nr magazynowy</th>
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Nazwa produktu</th>
+                <th>Rozmiar</th>
+                <th>Data zamówienia</th>
+                <th>Sprzedawca</th>
+                <th>Komentarz</th>
+                <th>Data przyjęcia</th>
+                <th>Nr faktury kupna</th>
+                <th>Data faktury kupna</th>
+                <th>Data wydania</th>
+                <th>Nr faktury sprzedaży</th>
+                <th>Data faktury sprzedaży</th>
+                <th>Data wpływu na konto</th>
+                <th>Cena sprzedaży</th>
+                <th>Kupujący</th>
+                <th>Numer listu przewozowego</th>
+                <th>Nr StockX</th>
+                <th>CW</th>
+            </tr>
+    
+            <tr>
+                <th>{{sold_shoe.storage_nr}}</th>
+                <th>{{sold_shoe.email}}</th>
+                <th>{{sold_shoe.buy_price}}</th>
+                <th>{{sold_shoe.name}}</th>
+                <th>{{sold_shoe.size}}</th>
+                <th>{{sold_shoe.order_date|default:"--"}}</th>
+                <th>{{sold_shoe.seller}}</th>
+                <th>{{sold_shoe.comment|default:"--"}}</th>
+                <th>{{sold_shoe.entry_date|default:"--"}}</th>
+                <th>{{sold_shoe.buy_invoice_nr|default:"--"}}</th>
+                <th>{{sold_shoe.buy_invoice_date|default:"--"}}</th>
+                <th>{{sold_shoe.exit_date|default:"--"}}</th>
+                <th>{{sold_shoe.sell_invoice_nr|default:"--"}}</th>
+                <th>{{sold_shoe.sell_invoice_date|default:"--"}}</th>
+                <th>{{sold_shoe.money_income_date|default:"--"}}</th>
+                {% if sold_shoe.sell_price == 0 %}
+                <th>--</th>
+                {% elif sold_shoe.sell_price %}
+                <th>{{sold_shoe.sell_price}}</th>
+                {% else %}
+                <th>--</th>
+                {% endif %}
+                <th>{{sold_shoe.buyer|default:"--"}}</th>
+                <th>{{sold_shoe.tracking_nr|default:"--"}}</th>
+                <th>{{sold_shoe.stockx_nr|default:"--"}}</th>
+                <th>{{sold_shoe.cw|default:"--"}}</th>
+            </tr>
+            
+        </table>
+        
+        {% for field in form %}
+        <div class="form-field">
+            <div class="label">{{field.label}}</div>
+            <div class="field">{{field}}</div>
+        </div>
+        {% endfor %}
+    </form>
+
+</div>
+
+
+
+{% endblock content %}

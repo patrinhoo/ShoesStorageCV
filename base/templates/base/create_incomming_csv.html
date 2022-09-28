@@ -1,0 +1,42 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-csv-wrapper">
+    <div class="from-csv-header">
+        KOLEJNOŚĆ DANYCH W PLIKU CSV
+    </div>
+
+    <form action="" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <table class="columns-table">
+            <tr class="table-header">
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Nazwa produktu</th>
+                <th>Rozmiar</th>
+                <th>Data zamówienia</th>
+                <th>Sprzedawca</th>
+                <th>Komentarz</th>
+            </tr>
+        </table>
+
+        {% for field in form %}
+        {{ field }}
+        {% endfor %}
+
+        <input type="submit" value="Utwórz" name="" id="">
+        <a href="{% url 'create-incomming' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+    </form>
+</div>
+
+
+
+{% endblock content %}

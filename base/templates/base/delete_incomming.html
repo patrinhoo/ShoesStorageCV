@@ -1,0 +1,47 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-single-wrapper">
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="title-wrapper">USUŃ NADCHODZĄCĄ PRZESYŁKĘ</div>
+
+        <input type="submit" value="Usuń" name="" id="">
+        <a href="{% url 'check-incomming' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+
+        <div class="del-div"><u>Czy na pewno chcesz usunąć tą nadchodzącą przesyłkę?</u></div>
+
+        <table class="overwiew-table">
+            <tr class="table-header">
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Nazwa produktu</th>
+                <th>Rozmiar</th>
+                <th>Data zamówienia</th>
+                <th>Sprzedawca</th>
+                <th>Komentarz</th>
+            </tr>
+    
+            <tr>
+                <th>{{incomming_shoe.email}}</th>
+                <th>{{incomming_shoe.buy_price}}</th>
+                <th>{{incomming_shoe.name}}</th>
+                <th>{{incomming_shoe.size}}</th>
+                <th>{{incomming_shoe.order_date|default:"--"}}</th>
+                <th>{{incomming_shoe.seller|default:"--"}}</th>
+                <th>{{incomming_shoe.comment|default:"--"}}</th>
+            </tr>
+            
+        </table>
+        
+    </form>
+</div>
+
+{% endblock content %}

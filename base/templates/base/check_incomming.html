@@ -1,0 +1,91 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CHECK INCOMMING PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'home' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="title-wrapper">NADCHODZĄCE PRZESYŁKI</div>
+
+
+<div class="filter-wrapper">
+    <form method="GET" action="{% url 'check-incomming' %}">
+        <label for="nane">Nazwa</label><br>
+        <input name="n" id="name" type="text" value="{{request.GET.n}}" placeholder="Wpisz nazwę buta"><br>
+        <label for="seller">Sprzedawca</label><br>
+        <input name="s" id="seller" type="text" value="{{request.GET.s}}" placeholder="Wpisz nazwę sprzedawcy"><br>
+
+        <label for="order_date">Data zamówienia</label><br>
+        <input name="od" id="order_date" type="date" value="{{request.GET.od}}" placeholder="Wybierz datę zamówienia"><br>
+
+        <input type="submit" value="SZUKAJ">
+    </form>
+</div>
+
+
+{% if incommings %}
+<div class="to-csv">
+    <a href="{% url 'incomming-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&od={{request.GET.od}}">
+        <input type="button" value="POBIERZ CSV" name="" id="">
+    </a>
+</div>
+{% endif %}
+
+<div class="check-incomming-wrapper">
+    {% if incommings %}
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th></th>
+            <th>Nr</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Nazwa produktu</th>
+            <th>Rozmiar</th>
+            <th>Data zamówienia</th>
+            <th>Sprzedawca</th>
+            <th>Komentarz</th>
+            <th></th>
+        </tr>
+    
+
+        {% for shoe in incommings %}
+
+        <tr>
+            <th class="input-data"><a href="{% url 'edit-incomming' shoe.id %}">EDYTUJ</a></th>
+            <th>{{forloop.counter}}</th>
+            <th>{{shoe.email}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.name}}</th>
+            <th>{{shoe.size}}</th>
+            <th>{{shoe.order_date|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
+            <th class="input-data"><a href="{% url 'delete-incomming' shoe.id %}">USUŃ</a></th>
+        </tr>
+
+        {% endfor %}
+        
+    </table>
+
+    {% else %}
+
+    <div class="no-shoes">
+        BRAK NADCHODZĄCYCH PRZESYŁEK
+    </div>
+
+    {% endif %}
+</div>
+
+
+
+
+{% endblock content %}

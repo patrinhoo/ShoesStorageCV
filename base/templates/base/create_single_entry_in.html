@@ -1,0 +1,53 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-single-wrapper">
+    
+    <form action="" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Utwórz" name="" id="">
+        <a href="{% url 'entry-in-single' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+        
+        <table class="overwiew-table">
+            <tr class="table-header">
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Nazwa produktu</th>
+                <th>Rozmiar</th>
+                <th>Data zamówienia</th>
+                <th>Sprzedawca</th>
+                <th>Komentarz</th>
+            </tr>
+    
+            <tr>
+                <th>{{incomming.email}}</th>
+                <th>{{incomming.buy_price}}</th>
+                <th>{{incomming.name}}</th>
+                <th>{{incomming.size}}</th>
+                <th>{{incomming.order_date|default:"--"}}</th>
+                <th>{{incomming.seller|default:"--"}}</th>
+                <th>{{incomming.comment|default:"--"}}</th>
+            </tr>
+            
+        </table>
+        
+        {% for field in form %}
+        <div class="form-field">
+            <div class="label">{{field.label}}</div>
+            <div class="field">{{field}}</div>
+        </div>
+        {% endfor %}
+    </form>
+
+</div>
+
+
+
+{% endblock content %}

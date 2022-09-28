@@ -1,0 +1,78 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CHECK INCOMMING PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'home' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="title-wrapper">NIE UTWORZONO NASTĘPUJĄCYCH PRZESYŁEK</div>
+{% if not_created %}
+    {% for nr in not_created %}
+    <div class="number">
+        Wiersz: {{nr}}
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="no-not-created">
+        WSZYSTKIE PRZESYŁKI ZOSTAŁY UTWORZONE
+    </div>
+{% endif %}
+
+
+<div class="title-wrapper">UTWORZONE NADCHODZĄCE PRZESYŁKI</div>
+
+
+<div class="check-incomming-wrapper">
+    {% if created_incommings %}
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th>Nr</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Nazwa produktu</th>
+            <th>Rozmiar</th>
+            <th>Data zamówienia</th>
+            <th>Sprzedawca</th>
+            <th>Komentarz</th>
+        </tr>
+    
+
+        {% for shoe in created_incommings %}
+
+        <tr>
+            <th>{{forloop.counter}}</th>
+            <th>{{shoe.email}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.name}}</th>
+            <th>{{shoe.size}}</th>
+            <th>{{shoe.order_date|default:"--"}}</th>
+            <th>{{shoe.seller}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
+        </tr>
+
+        {% endfor %}
+        
+    </table>
+
+    {% else %}
+
+    <div class="no-shoes">
+        NIE UTWORZONO NADCHODZĄCYCH PRZESYŁEK
+    </div>
+
+    {% endif %}
+</div>
+
+
+
+
+{% endblock content %}

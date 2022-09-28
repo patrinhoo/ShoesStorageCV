@@ -1,0 +1,26 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-single-wrapper">
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="title-wrapper">USUŃ SPRZEDAWCĘ</div>
+        <div class="del-div"><u>Czy na pewno chcesz usunąć tego sprzedawcę:</u></div>
+        <div class="del-div">{{seller}}?</div>
+
+        <input type="submit" value="Usuń" name="" id="">
+        <a href="{% url 'sellers' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+        
+    </form>
+</div>
+
+
+
+{% endblock content %}

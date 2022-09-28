@@ -1,0 +1,118 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CHECK INCOMMING PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'home' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="title-wrapper">ARCHIWUM</div>
+
+
+<div class="filter-wrapper">
+    <form method="GET" action="{% url 'archives' %}">
+        <label for="nane">Nazwa</label><br>
+        <input name="n" id="name" type="text" value="{{request.GET.n}}" placeholder="Wpisz nazwę buta"><br>
+        <label for="seller">Sprzedawca</label><br>
+        <input name="s" id="seller" type="text" value="{{request.GET.s}}" placeholder="Wpisz nazwę sprzedawcy"><br>
+        <label for="buyer">Kupujący</label><br>
+        <input name="b" id="buyer" type="text" value="{{request.GET.b}}" placeholder="Wpisz nazwę kupującego"><br>
+
+        <label for="order_date">Data zamówienia</label><br>
+        <input name="od" id="order_date" type="date" value="{{request.GET.od}}" placeholder="Wybierz datę zamówienia"><br>
+        <label for="entry_date">Data przyjęcia</label><br>
+        <input name="ed" id="entry_date" type="date" value="{{request.GET.ed}}" placeholder="Wybierz datę przyjęcia"><br>
+        <label for="send_date">Data wydania</label><br>
+        <input name="sd" id="send_date" type="date" value="{{request.GET.sd}}" placeholder="Wybierz datę wydania"><br>
+
+        <input type="submit" value="SZUKAJ">
+    </form>
+</div>
+
+
+{% if sold_shoes %}
+<div class="to-csv">
+    <a href="{% url 'archives-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&od={{request.GET.od}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}">
+        <input type="button" value="POBIERZ CSV" name="" id="">
+    </a>
+</div>
+{% endif %}
+
+<div class="check-incomming-wrapper">
+    {% if sold_shoes %}
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th></th>
+            <th>Nr magazynowy</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Nazwa produktu</th>
+            <th>Rozmiar</th>
+            <th>Data zamówienia</th>
+            <th>Sprzedawca</th>
+            <th>Komentarz</th>
+            <th>Data przyjęcia</th>
+            <th>Nr faktury kupna</th>
+            <th>Data faktury kupna</th>
+            <th>Data wydania</th>
+            <th>Nr faktury sprzedaży</th>
+            <th>Data faktury sprzedaży</th>
+            <th>Data wpływu na konto</th>
+            <th>Cena sprzedaży</th>
+            <th>Kupujący</th>
+            <th>Nr listu przewozowego</th>
+            <th>Nr StockX</th>
+            <th>CW</th>
+            <th></th>
+        </tr>
+    
+        {% for shoe in sold_shoes %}
+
+        <tr>
+            <th class="input-data"><a href="{% url 'edit-archives' shoe.id %}">EDYTUJ</a></th>
+            <th>{{shoe.storage_nr|default:"--"}}</th>
+            <th>{{shoe.email}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.name}}</th>
+            <th>{{shoe.size}}</th>
+            <th>{{shoe.order_date|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
+            <th>{{shoe.entry_date|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_date|default:"--"}}</th>
+            <th>{{shoe.exit_date|default:"--"}}</th>
+            <th>{{shoe.sell_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.sell_invoice_date|default:"--"}}</th>
+            <th>{{shoe.money_income_date|default:"--"}}</th>
+            <th>{{shoe.sell_price|default:"--"}}</th>
+            <th>{{shoe.buyer|default:"--"}}</th>
+            <th>{{shoe.tracking_nr|default:"--"}}</th>
+            <th>{{shoe.stockx_nr|default:"--"}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
+            <th class="input-data"><a href="{% url 'delete-archives' shoe.id %}">USUŃ</a></th>
+        </tr>
+
+        {% endfor %}
+        
+    </table>
+
+    {% else %}
+
+    <div class="no-shoes">
+        BRAK BUTÓW W ARCHIWUM
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}

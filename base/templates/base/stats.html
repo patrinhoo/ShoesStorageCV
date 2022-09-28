@@ -1,0 +1,271 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- MAIN PAGE - OPTIONS -->
+<div class="stats-page-wrapper">
+
+    <div class="charts-row">
+        <div class="income-costs-chart">
+            <canvas id="myChart" width="400" height="400"></canvas>
+            <script>
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Aktualny miesiąc'],
+                    datasets: [{
+                        label: 'Przychód',
+                        data: [{{income}}],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 1)',
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)', 
+                        ],
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Koszty',
+                        data: [{{costs}}],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 1)',
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                        ],
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Dochód',
+                        data: [{{profit}}],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 1)',
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                        ],
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Podatek',
+                        data: [{{tax}}],
+                        backgroundColor: [
+                            'rgba(255, 206, 86, 1)',
+                        ],
+                        borderColor: [
+                            'rgba(255, 206, 86, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'DOCHÓD W AKTUALNYM MIESIĄCU [zł]'
+                        },
+                    }
+                }
+            });
+        </script>
+        </div>
+
+        <div class="income-costs-chart">
+            <canvas id="myChart2" width="400" height="400"></canvas>
+            <script>
+            const ctx2 = document.getElementById('myChart2').getContext('2d');
+            const myChart2 = new Chart(ctx2, {
+                type: 'pie',
+                data: {
+                    labels: ['Liczba kupionych', 'Liczba sprzedanych'],
+                    datasets: [{
+                        label: 'Bieżący miesiąc',
+                        data: [{{bought_count}}, {{sold_count}}],
+                        backgroundColor: [
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'ATKUALNY MIESIĄC'
+                        }
+                    }
+                }
+            });
+            </script>
+        </div>
+    </div>
+
+    <!-- PROFIT CHART -->
+    <div class="income-chart">
+        <canvas id="myChart3" width="400" height="200"></canvas>
+        <script>
+        const ctx3 = document.getElementById('myChart3').getContext('2d');
+        const myChart3 = new Chart(ctx3, {
+            type: 'line',
+            data: {
+                labels: [{% for month, values in last_year.items %}{{month}}, {% endfor %}],
+                datasets: [{
+                    label: 'Dochód',
+                    data: [{% for month, values in last_year.items %}{{values.profit}}, {% endfor %}],
+                    borderColor: [
+                        'rgba(24, 132, 205, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    },
+                    xAxes: {
+                        offset: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'DOCHÓD W OSTATNICH MIESIĄCACH [zł]'
+                    },
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        </script>
+    </div>
+
+    <!-- INCOME AND COSTS CHART -->
+    <div class="income-chart">
+        <canvas id="myChart4" width="400" height="200"></canvas>
+        <script>
+        const ctx4 = document.getElementById('myChart4').getContext('2d');
+        const myChart4 = new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: [{% for month, values in last_year.items %}{{month}}, {% endfor %}],
+                datasets: [{
+                    label: 'Przychód',
+                    data: [{% for month, values in last_year.items %}{{values.income}}, {% endfor %}],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 1)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)', 
+                    ],
+                    borderWidth: 1
+                },
+                {
+                    label: 'Koszty',
+                    data: [{% for month, values in last_year.items %}{{values.costs}}, {% endfor %}],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 1)',
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'PRZYCHÓD I KOSZTY W OSTATNICH MIESIĄCACH [zł]'
+                    },
+                }
+            }
+        });
+        </script>
+    </div>
+
+    <div class="charts-row">
+        <div class="income-costs-chart">
+            <canvas id="myChart5" width="400" height="400"></canvas>
+            <script>
+            const ctx5 = document.getElementById('myChart5').getContext('2d');
+            const myChart5 = new Chart(ctx5, {
+                type: 'pie',
+                data: {
+                    labels: [{% for buyer, count in bought_from.items %}'{{buyer}}', {% endfor %}],
+                    datasets: [{
+                        label: 'Ostatnie 3 miesiące',
+                        data: [{% for buyer, count in bought_from.items %}'{{count}}', {% endfor %}],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'KUPIONE OD (ostatnie 3 miesiące) [szt]'
+                        }
+                    }
+                }
+            });
+            </script>
+        </div>
+
+        <div class="income-costs-chart">
+            <canvas id="myChart6" width="400" height="400"></canvas>
+            <script>
+            const ctx6 = document.getElementById('myChart6').getContext('2d');
+            const myChart6 = new Chart(ctx6, {
+                type: 'pie',
+                data: {
+                    labels: [{% for seller, count in sold_to.items %}'{{seller}}', {% endfor %}],
+                    datasets: [{
+                        label: 'Ostatnie 3 miesiące',
+                        data: [{% for seller, count in sold_to.items %}'{{count}}', {% endfor %}],
+                        backgroundColor: [
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'SPRZEDANE DO (ostatnie 3 miesiące) [szt]'
+                        }
+                    }
+                }
+            });
+            </script>
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}

@@ -1,0 +1,53 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-single-wrapper">
+    
+    <form action="" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Aktualizuj" name="" id="">
+        <a href="{% url 'check-incomming' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+        
+        <table class="overwiew-table">
+            <tr class="table-header">
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Nazwa produktu</th>
+                <th>Rozmiar</th>
+                <th>Data zamówienia</th>
+                <th>Sprzedawca</th>
+                <th>Komentarz</th>
+            </tr>
+    
+            <tr>
+                <th>{{incomming_shoe.email}}</th>
+                <th>{{incomming_shoe.buy_price}}</th>
+                <th>{{incomming_shoe.name}}</th>
+                <th>{{incomming_shoe.size}}</th>
+                <th>{{incomming_shoe.order_date|default:"--"}}</th>
+                <th>{{incomming_shoe.seller|default:"--"}}</th>
+                <th>{{incomming_shoe.comment|default:"--"}}</th>
+            </tr>
+            
+        </table>
+        
+        {% for field in form %}
+        <div class="form-field">
+            <div class="label">{{field.label}}</div>
+            <div class="field">{{field}}</div>
+        </div>
+        {% endfor %}
+    </form>
+
+</div>
+
+
+
+{% endblock content %}

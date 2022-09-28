@@ -1,0 +1,53 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- CREATE SINGLE INCOMMING PAGE - OPTIONS -->
+<div class="create-single-wrapper">
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="title-wrapper">USUŃ PRZESYŁKĘ Z MAGAZYNU</div>
+
+        <input type="submit" value="Usuń" name="" id="">
+        <a href="{% url 'check-storage' %}">
+            <input type="button" value="Cofnij" name="" id="">
+        </a>
+
+        <div class="del-div"><u>Czy na pewno chcesz usunąć tą przesyłkę z magazynu?</u></div>
+
+        <table class="overwiew-table">
+            <tr class="table-header">
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Nazwa produktu</th>
+                <th>Rozmiar</th>
+                <th>Data zamówienia</th>
+                <th>Sprzedawca</th>
+                <th>Komentarz</th>
+                <th>Data przyjęcia</th>
+                <th>Nr faktury kupna</th>
+                <th>Data faktury kupna</th>
+            </tr>
+    
+            <tr>
+                <th>{{in_storage_shoe.email}}</th>
+                <th>{{in_storage_shoe.buy_price}}</th>
+                <th>{{in_storage_shoe.name}}</th>
+                <th>{{in_storage_shoe.size}}</th>
+                <th>{{in_storage_shoe.order_date|default:"--"}}</th>
+                <th>{{in_storage_shoe.seller|default:"--"}}</th>
+                <th>{{in_storage_shoe.comment|default:"--"}}</th>
+                <th>{{in_storage_shoe.entry_date|default:"--"}}</th>
+                <th>{{in_storage_shoe.buy_invoice_nr|default:"--"}}</th>
+                <th>{{in_storage_shoe.buy_invoice_date|default:"--"}}</th>
+            </tr>
+            
+        </table>
+        
+    </form>
+</div>
+
+{% endblock content %}
