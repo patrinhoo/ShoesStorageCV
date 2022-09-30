@@ -1701,10 +1701,10 @@ class Stats(LoginRequiredMixin, TemplateView):
         for shoe in archives_this_month:
             costs += shoe.buy_price
 
-        context['income'] = income
-        context['costs'] = costs
-        context['profit'] = 0.97 * float(income) - float(costs)
-        context['tax'] = 0.03 * float(income)
+        context['income'] = round(income, 2)
+        context['costs'] = round(costs)
+        context['profit'] = round(0.97 * float(income) - float(costs), 2)
+        context['tax'] = round(0.03 * float(income), 2)
 
         # INCOME COSTS last year
         last_year = dict(zip([f'{date.month}.{date.year}' for date in last_12_months], [
