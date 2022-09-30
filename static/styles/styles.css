@@ -348,24 +348,6 @@ button {
     text-decoration: none;
 }
 
-.create-single-wrapper form a input[type='button'] {
-    display: block;
-    width: 150px;
-    height: 30px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 2rem;
-    border-radius: 10px;
-    background-color: #ff5555;
-    font-weight: bold;
-    border: 1px solid #333;
-    cursor: pointer;
-}
-
-.create-single-wrapper form a input[type='button']:hover {
-    background-color: #dd3333;
-}
-
 .create-single-wrapper input[type='text'] {
     width: 350px;
     height: 25px;
@@ -667,25 +649,6 @@ input[type=file] {
 
 .create-csv-wrapper input[type='submit']:hover {
     background-color: #01aa70;
-}
-
-
-.create-csv-wrapper form a input[type='button'] {
-    display: block;
-    width: 150px;
-    height: 30px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 2rem;
-    border-radius: 10px;
-    background-color: #ff5555;
-    font-weight: bold;
-    border: 1px solid #333;
-    cursor: pointer;
-}
-
-.create-csv-wrapper form a input[type='button']:hover {
-    background-color: #dd3333;
 }
 
 .create-csv-wrapper table {

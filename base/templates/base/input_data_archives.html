@@ -12,9 +12,9 @@
         {% csrf_token %}
         <input type="submit" value="Aktualizuj" name="" id="">
         {% if input_missing %}
-        <a href="{% url 'input-missing-archives' %}">
+        <a class="back-a" href="{% url 'input-missing-archives' %}">
         {% else %}
-        <a href="{% url 'archives' %}">
+        <a class="back-a" href="{% url 'archives' %}">
         {% endif %}
             <input type="button" value="Cofnij" name="" id="">
         </a>
