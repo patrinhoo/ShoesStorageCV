@@ -84,7 +84,7 @@ urlpatterns = [
          views.EditSeller.as_view(), name='edit-seller'),
 
     path('buyers/', views.Buyers.as_view(), name='buyers'),
-    path('create_buyer/', views.CreateSeller.as_view(), name='create-buyer'),
+    path('create_buyer/', views.CreateBuyer.as_view(), name='create-buyer'),
     path('delete_buyer/<str:pk>/',
          views.DeleteBuyer.as_view(), name='delete-buyer'),
     path('edit_buyer/<str:pk>/',

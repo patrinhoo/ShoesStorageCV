@@ -861,6 +861,33 @@ input[type=file] {
     padding-right: 12px;
 }
 
+.back-a {
+    display: block;
+    width: 150px;
+    height: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.back-a input[type='button'] {
+    display: block;
+    width: 150px;
+    height: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+    background-color: #ff5555;
+    font-weight: bold;
+    border: 1px solid #333;
+    cursor: pointer;
+}
+
+.back-a input[type='button']:hover {
+    background-color: #dd3333;
+}
 
 
 /* FOOTER */
