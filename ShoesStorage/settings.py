@@ -91,17 +91,6 @@ DATABASES = {
 db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES['default'].update(db_from_env)
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'shoes_storage',
-#         'USER': 'patrinho',
-#         'PASSWORD': 'Patryk1996.',
-#         'HOST': 'database-1.ceewjgvkobla.us-east-1.rds.amazonaws.com',
-#         'PORT': '5432',
-#     }
-# }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -164,10 +153,6 @@ AWS_QUERYSTRING_AUTH = False
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# AWS_S3_REGION_NAME = 'eu-central-1'
-# AWS_S3_ENDPOINT_URL = 'https://sts.eu-central-1.amazonaws.com'
-# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-
 
 '''
 [
