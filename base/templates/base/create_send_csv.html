@@ -16,10 +16,13 @@
 
         <table class="columns-table">
             <tr class="table-header">
+                <th>Numer magazynowy</th>
                 <th>Email</th>
                 <th>Cena kupna</th>
                 <th>Nazwa produktu</th>
                 <th>Rozmiar</th>
+                <th>CW</th>
+                <th>Numer zamówienia</th>
                 <th>Data zamówienia</th>
                 <th>Sprzedawca</th>
                 <th>Komentarz</th>
@@ -34,9 +37,17 @@
                 <th>Kupujący</th>
                 <th>Nr listu przewozowego</th>
                 <th>Nr StockX</th>
-                <th>CW</th>
             </tr>
         </table>
+
+        <div class="hint-wrapper">
+            <div class="hint">
+                Pamiętaj, że prawidłowy format daty to YYYY-mm-dd!
+            </div>
+            <div class="hint">
+                Sprawdź czy separatorem dziesiętnym w przypadku ceny jest kropka!
+            </div>
+        </div>
 
         {% for field in form %}
         {{ field }}

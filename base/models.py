@@ -20,7 +20,9 @@ class IncommingShoe(models.Model):
     email = models.CharField(max_length=200)
     buy_price = models.DecimalField(max_digits=7, decimal_places=2)
     name = models.CharField(max_length=200)
-    size = models.CharField(max_length=10)
+    size = models.CharField(max_length=20)
+    cw = models.CharField(max_length=20, blank=True)
+    order_nr = models.CharField(max_length=30, blank=True)
     order_date = models.DateField()
     seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(max_length=200, blank=True)
@@ -30,10 +32,14 @@ class IncommingShoe(models.Model):
 
 
 class InStorageShoe(models.Model):
+    storage_nr = models.IntegerField(unique=True, null=True)
+
     email = models.CharField(max_length=200)
     buy_price = models.DecimalField(max_digits=7, decimal_places=2)
     name = models.CharField(max_length=200)
-    size = models.CharField(max_length=10)
+    size = models.CharField(max_length=20)
+    cw = models.CharField(max_length=20, blank=True)
+    order_nr = models.CharField(max_length=30, blank=True)
     order_date = models.DateField()
     seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(max_length=200, blank=True)
@@ -47,10 +53,14 @@ class InStorageShoe(models.Model):
 
 
 class SoldShoe(models.Model):
+    storage_nr = models.IntegerField(unique=True, null=True)
+
     email = models.CharField(max_length=200)
     buy_price = models.DecimalField(max_digits=7, decimal_places=2)
     name = models.CharField(max_length=200)
-    size = models.CharField(max_length=10)
+    size = models.CharField(max_length=20)
+    cw = models.CharField(max_length=20, blank=True)
+    order_nr = models.CharField(max_length=30, blank=True)
     order_date = models.DateField()
     seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(max_length=200, blank=True)
@@ -59,7 +69,6 @@ class SoldShoe(models.Model):
     buy_invoice_nr = models.CharField(max_length=30, blank=True)
     buy_invoice_date = models.DateField(blank=True, null=True)
 
-    storage_nr = models.IntegerField()
     exit_date = models.DateField()
     sell_invoice_nr = models.CharField(max_length=30, blank=True)
     sell_invoice_date = models.DateField(blank=True, null=True)
@@ -70,7 +79,6 @@ class SoldShoe(models.Model):
         Buyer, on_delete=models.SET_NULL, null=True, blank=True)
     tracking_nr = models.CharField(max_length=30, blank=True)
     stockx_nr = models.CharField(max_length=30, blank=True)
-    cw = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return str(self.storage_nr) + '. ' + self.name

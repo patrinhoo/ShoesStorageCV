@@ -26,50 +26,30 @@
                 <th>Cena kupna</th>
                 <th>Nazwa produktu</th>
                 <th>Rozmiar</th>
+                <th>CW</th>
+                <th>Numer zamówienia</th>
                 <th>Data zamówienia</th>
                 <th>Sprzedawca</th>
                 <th>Komentarz</th>
                 <th>Data przyjęcia</th>
                 <th>Nr faktury kupna</th>
                 <th>Data faktury kupna</th>
-                <th>Data wydania</th>
-                <th>Nr faktury sprzedaży</th>
-                <th>Data faktury sprzedaży</th>
-                <th>Data wpływu na konto</th>
-                <th>Cena sprzedaży</th>
-                <th>Kupujący</th>
-                <th>Numer listu przewozowego</th>
-                <th>Nr StockX</th>
-                <th>CW</th>
             </tr>
     
             <tr>
-                <th>{{in_storage_shoe.id}}</th>
+                <th>{{in_storage_shoe.storage_nr|default:"--"}}</th>
                 <th>{{in_storage_shoe.email}}</th>
                 <th>{{in_storage_shoe.buy_price}}</th>
                 <th>{{in_storage_shoe.name}}</th>
                 <th>{{in_storage_shoe.size}}</th>
+                <th>{{in_storage_shoe.cw|default:"--"}}</th>
+                <th>{{in_storage_shoe.order_nr|default:"--"}}</th>
                 <th>{{in_storage_shoe.order_date|default:"--"}}</th>
                 <th>{{in_storage_shoe.seller|default:"--"}}</th>
                 <th>{{in_storage_shoe.comment|default:"--"}}</th>
                 <th>{{in_storage_shoe.entry_date|default:"--"}}</th>
                 <th>{{in_storage_shoe.buy_invoice_nr|default:"--"}}</th>
                 <th>{{in_storage_shoe.buy_invoice_date|default:"--"}}</th>
-                <th>{{in_storage_shoe.exit_date|default:"--"}}</th>
-                <th>{{in_storage_shoe.sell_invoice_nr|default:"--"}}</th>
-                <th>{{in_storage_shoe.sell_invoice_date|default:"--"}}</th>
-                <th>{{in_storage_shoe.money_income_date|default:"--"}}</th>
-                {% if in_storage_shoe.sell_price == 0 %}
-                <th>--</th>
-                {% elif in_storage_shoe.sell_price %}
-                <th>{{in_storage_shoe.sell_price}}</th>
-                {% else %}
-                <th>--</th>
-                {% endif %}
-                <th>{{in_storage_shoe.buyer|default:"--"}}</th>
-                <th>{{in_storage_shoe.tracking_nr|default:"--"}}</th>
-                <th>{{in_storage_shoe.stockx_nr|default:"--"}}</th>
-                <th>{{in_storage_shoe.cw|default:"--"}}</th>
             </tr>
             
         </table>

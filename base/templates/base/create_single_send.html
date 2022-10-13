@@ -17,6 +17,7 @@
         
         <table class="overwiew-table">
             <tr class="table-header">
+                <th>Nr magazynowy</th>
                 <th>Email</th>
                 <th>Cena kupna</th>
                 <th>Nazwa produktu</th>
@@ -30,6 +31,7 @@
             </tr>
     
             <tr>
+                <th>{{in_storage.storage_nr|default:"--"}}</th>
                 <th>{{in_storage.email}}</th>
                 <th>{{in_storage.buy_price}}</th>
                 <th>{{in_storage.name}}</th>

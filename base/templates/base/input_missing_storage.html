@@ -23,6 +23,8 @@
         <label for="seller">Sprzedawca</label><br>
         <input name="s" id="seller" type="text" value="{{request.GET.s}}" placeholder="Wpisz nazwę sprzedawcy"><br>
 
+        <label for="order_nr">Numer zamówienia</label><br>
+        <input name="on" id="order_nr" type="text" value="{{request.GET.on}}" placeholder="Wpisz numer zamówienia"><br>
         <label for="order_date">Data zamówienia</label><br>
         <input name="od" id="order_date" type="date" value="{{request.GET.od}}" placeholder="Wybierz datę zamówienia"><br>
         <label for="entry_date">Data przyjęcia</label><br>
@@ -35,7 +37,7 @@
 
 {% if missing_data_storage %}
 <div class="to-csv">
-    <a href="{% url 'missing-storage-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&od={{request.GET.od}}&ed={{request.GET.ed}}">
+    <a href="{% url 'missing-storage-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&on={{request.GET.on}}&od={{request.GET.od}}&ed={{request.GET.ed}}">
         <input type="button" value="POBIERZ CSV" name="" id="">
     </a>
 </div>
@@ -52,6 +54,8 @@
             <th>Cena kupna</th>
             <th>Nazwa produktu</th>
             <th>Rozmiar</th>
+            <th>CW</th>
+            <th>Numer zamówienia</th>
             <th>Data zamówienia</th>
             <th>Sprzedawca</th>
             <th>Komentarz</th>
@@ -65,11 +69,13 @@
 
         <tr>
             <th class="input-data"><a href="{% url 'input-data-storage' shoe.id %}">UZUPEŁNIJ</a></th>
-            <th>{{shoe.id}}</th>
+            <th>{{shoe.storage_nr|default:"--"}}</th>
             <th>{{shoe.email}}</th>
             <th>{{shoe.buy_price}}</th>
             <th>{{shoe.name}}</th>
             <th>{{shoe.size}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
+            <th>{{shoe.order_nr|default:"--"}}</th>
             <th>{{shoe.order_date|default:"--"}}</th>
             <th>{{shoe.seller|default:"--"}}</th>
             <th>{{shoe.comment|default:"--"}}</th>

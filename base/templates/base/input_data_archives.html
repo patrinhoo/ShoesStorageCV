@@ -26,6 +26,8 @@
                 <th>Cena kupna</th>
                 <th>Nazwa produktu</th>
                 <th>Rozmiar</th>
+                <th>CW</th>
+                <th>Numer zamówienia</th>
                 <th>Data zamówienia</th>
                 <th>Sprzedawca</th>
                 <th>Komentarz</th>
@@ -40,7 +42,6 @@
                 <th>Kupujący</th>
                 <th>Numer listu przewozowego</th>
                 <th>Nr StockX</th>
-                <th>CW</th>
             </tr>
     
             <tr>
@@ -49,8 +50,10 @@
                 <th>{{sold_shoe.buy_price}}</th>
                 <th>{{sold_shoe.name}}</th>
                 <th>{{sold_shoe.size}}</th>
+                <th>{{sold_shoe.cw|default:"--"}}</th>
+                <th>{{sold_shoe.order_nr|default:"--"}}</th>
                 <th>{{sold_shoe.order_date|default:"--"}}</th>
-                <th>{{sold_shoe.seller}}</th>
+                <th>{{sold_shoe.seller|default:"--"}}</th>
                 <th>{{sold_shoe.comment|default:"--"}}</th>
                 <th>{{sold_shoe.entry_date|default:"--"}}</th>
                 <th>{{sold_shoe.buy_invoice_nr|default:"--"}}</th>
@@ -69,7 +72,6 @@
                 <th>{{sold_shoe.buyer|default:"--"}}</th>
                 <th>{{sold_shoe.tracking_nr|default:"--"}}</th>
                 <th>{{sold_shoe.stockx_nr|default:"--"}}</th>
-                <th>{{sold_shoe.cw|default:"--"}}</th>
             </tr>
             
         </table>

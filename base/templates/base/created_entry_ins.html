@@ -40,6 +40,8 @@
             <th>Cena kupna</th>
             <th>Nazwa produktu</th>
             <th>Rozmiar</th>
+            <th>CW</th>
+            <th>Numer zamówienia</th>
             <th>Data zamówienia</th>
             <th>Sprzedawca</th>
             <th>Komentarz</th>
@@ -52,11 +54,13 @@
         {% for shoe in created_entry_ins %}
 
         <tr>
-            <th>{{shoe.id}}</th>
+            <th>{{shoe.storage_nr}}</th>
             <th>{{shoe.email}}</th>
             <th>{{shoe.buy_price}}</th>
             <th>{{shoe.name}}</th>
             <th>{{shoe.size}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
+            <th>{{shoe.order_nr|default:"--"}}</th>
             <th>{{shoe.order_date|default:"--"}}</th>
             <th>{{shoe.seller}}</th>
             <th>{{shoe.comment|default:"--"}}</th>

@@ -8,31 +8,13 @@ class DateInput(forms.DateInput):
     input_type = 'date'
 
 
-class IncommingShoeForm(forms.ModelForm):
-    class Meta:
-        model = IncommingShoe
-        fields = ['email', 'buy_price', 'name',
-                  'size', 'order_date', 'seller', 'comment']
-        labels = {
-            'email': ('Email'),
-            'buy_price': ('Cena zakupu [PLN]'),
-            'name': ('Nazwa buta'),
-            'size': ('Rozmiar'),
-            'order_date': ('Data zamówienia'),
-            'seller': ('Sprzedawca'),
-            'comment': ('Uwagi'),
-        }
-
-        widgets = {
-            'order_date': DateInput(),
-        }
-
-
 class EntryInForm(forms.ModelForm):
     class Meta:
         model = InStorageShoe
-        fields = ['entry_date', 'buy_invoice_nr', 'buy_invoice_date']
+        fields = ['storage_nr', 'entry_date',
+                  'buy_invoice_nr', 'buy_invoice_date']
         labels = {
+            'storage_nr': ('Numer magazynowy'),
             'entry_date': ('Data przyjęcia na magazyn'),
             'buy_invoice_nr': ('Numer faktury kupna'),
             'buy_invoice_date': ('Data faktury kupna'),
@@ -48,7 +30,7 @@ class SendForm(forms.ModelForm):
     class Meta:
         model = SoldShoe
         fields = ['exit_date', 'sell_invoice_nr', 'sell_invoice_date',
-                  'money_income_date', 'sell_price', 'buyer', 'tracking_nr', 'stockx_nr', 'cw']
+                  'money_income_date', 'sell_price', 'buyer', 'tracking_nr', 'stockx_nr']
         labels = {
             'exit_date': ('Data wydania z magazynu'),
             'sell_invoice_nr': ('Numer faktury sprzedaży'),
@@ -58,7 +40,6 @@ class SendForm(forms.ModelForm):
             'buyer': ('Kupujący'),
             'tracking_nr': ('Numer listu przewozowego'),
             'stockx_nr': ('Numer StockX'),
-            'cw': ('CW'),
         }
 
         widgets = {
@@ -78,6 +59,8 @@ class IncommingShoeForm(forms.ModelForm):
             'buy_price': ('Cena zakupu [PLN]'),
             'name': ('Nazwa buta'),
             'size': ('Rozmiar'),
+            'cw': ('CW'),
+            'order_nr': ('Numer zamówienia'),
             'order_date': ('Data zamówienia'),
             'seller': ('Sprzedawca'),
             'comment': ('Uwagi'),
@@ -98,6 +81,8 @@ class SoldMissingForm(forms.ModelForm):
             'buy_price': ('Cena zakupu [PLN]'),
             'name': ('Nazwa buta'),
             'size': ('Rozmiar'),
+            'cw': ('CW'),
+            'order_nr': ('Numer zamówienia'),
             'order_date': ('Data zamówienia'),
             'seller': ('Sprzedawca'),
             'comment': ('Uwagi'),
@@ -114,7 +99,6 @@ class SoldMissingForm(forms.ModelForm):
             'buyer': ('Kupujący'),
             'tracking_nr': ('Numer listu przewozowego'),
             'stockx_nr': ('Numer StockX'),
-            'cw': ('CW'),
         }
 
         widgets = {
@@ -132,13 +116,15 @@ class SoldMissingForm(forms.ModelForm):
 class InStorageMissingForm(forms.ModelForm):
     class Meta:
         model = InStorageShoe
-        fields = '__all__'
+        exclude = ('storage_nr',)
 
         labels = {
             'email': ('Email'),
             'buy_price': ('Cena zakupu [PLN]'),
             'name': ('Nazwa buta'),
             'size': ('Rozmiar'),
+            'cw': ('CW'),
+            'order_nr': ('Numer zamówienia'),
             'order_date': ('Data zamówienia'),
             'seller': ('Sprzedawca'),
             'comment': ('Uwagi'),

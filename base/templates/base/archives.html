@@ -25,6 +25,8 @@
         <label for="buyer">Kupujący</label><br>
         <input name="b" id="buyer" type="text" value="{{request.GET.b}}" placeholder="Wpisz nazwę kupującego"><br>
 
+        <label for="order_nr">Numer zamówienia</label><br>
+        <input name="on" id="order_nr" type="text" value="{{request.GET.on}}" placeholder="Wpisz numer zamówienia"><br>
         <label for="order_date">Data zamówienia</label><br>
         <input name="od" id="order_date" type="date" value="{{request.GET.od}}" placeholder="Wybierz datę zamówienia"><br>
         <label for="entry_date">Data przyjęcia</label><br>
@@ -39,7 +41,7 @@
 
 {% if sold_shoes %}
 <div class="to-csv">
-    <a href="{% url 'archives-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&od={{request.GET.od}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}">
+    <a href="{% url 'archives-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&od={{request.GET.od}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}">
         <input type="button" value="POBIERZ CSV" name="" id="">
     </a>
 </div>
@@ -56,6 +58,8 @@
             <th>Cena kupna</th>
             <th>Nazwa produktu</th>
             <th>Rozmiar</th>
+            <th>CW</th>
+            <th>Numer zamówienia</th>
             <th>Data zamówienia</th>
             <th>Sprzedawca</th>
             <th>Komentarz</th>
@@ -70,7 +74,6 @@
             <th>Kupujący</th>
             <th>Nr listu przewozowego</th>
             <th>Nr StockX</th>
-            <th>CW</th>
             <th></th>
         </tr>
     
@@ -83,6 +86,8 @@
             <th>{{shoe.buy_price}}</th>
             <th>{{shoe.name}}</th>
             <th>{{shoe.size}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
+            <th>{{shoe.order_nr|default:"--"}}</th>
             <th>{{shoe.order_date|default:"--"}}</th>
             <th>{{shoe.seller|default:"--"}}</th>
             <th>{{shoe.comment|default:"--"}}</th>
@@ -97,7 +102,6 @@
             <th>{{shoe.buyer|default:"--"}}</th>
             <th>{{shoe.tracking_nr|default:"--"}}</th>
             <th>{{shoe.stockx_nr|default:"--"}}</th>
-            <th>{{shoe.cw|default:"--"}}</th>
             <th class="input-data"><a href="{% url 'delete-archives' shoe.id %}">USUŃ</a></th>
         </tr>
 

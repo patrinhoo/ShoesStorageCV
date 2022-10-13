@@ -185,19 +185,30 @@ button {
     max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
 
     margin-bottom: 2rem;
     margin-top: 2rem;
 }
 
 .main-page-wrapper .link a {
+    height: 100%;
+    width: 100%;
     justify-self: center;
     align-self: center;
+    align-items: center;
     display: block;
     text-decoration: none;
     color: black;
+    border-radius: 1rem;
+}
+
+.main-page-wrapper .link a .link-text {
+    height: 150px;
+    width: 350px;
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
 }
 
 .main-page-wrapper .link {
@@ -212,8 +223,6 @@ button {
     text-align: center;
     display: flex;
     align-items: center;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
 }
 
 .main-page-wrapper .link:hover {
@@ -248,19 +257,30 @@ button {
     max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
 
     margin-top: 2rem;
     margin-bottom: 2rem;
 }
 
 .create-incomming-wrapper .link a {
+    height: 100%;
+    width: 100%;
     justify-self: center;
     align-self: center;
+    align-items: center;
     display: block;
     text-decoration: none;
     color: black;
+    border-radius: 1rem;
+}
+
+.create-incomming-wrapper .link a .link-text {
+    height: 150px;
+    width: 1200px;
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
 }
 
 .create-incomming-wrapper .link {
@@ -275,8 +295,6 @@ button {
     text-align: center;
     display: flex;
     align-items: center;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
 }
 
 .create-incomming-wrapper .link:hover {
@@ -286,6 +304,21 @@ button {
 .create-incomming-wrapper .link div {
     margin-left: auto;
     margin-right: auto;
+}
+
+.hint-wrapper {
+    width: fit-content; 
+    margin-left: auto; 
+    margin-right:auto; 
+    margin-top: 1rem; 
+    color: #dd3333; 
+    font-weight: bold;
+}
+
+.hint-wrapper .hint {
+    width: fit-content; 
+    margin-left: auto; 
+    margin-right:auto;
 }
 
 @media (max-width: 900px) {

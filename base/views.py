@@ -5,7 +5,8 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Max
+from django.db import IntegrityError
 from django.http import HttpResponse
 
 from .models import Buyer, InStorageShoe, IncommingShoe, Seller, SoldShoe
@@ -30,7 +31,7 @@ def incomming_csv(request):
 
     writer = csv.writer(response, delimiter=';')
     writer.writerow(['Nr', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'Data zamowienia', 'Sprzedawca', 'Komentarz'])
+                     'Rozmiar', 'CW', 'Nr zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz'])
 
     incomming_shoes = IncommingShoe.objects.all()
 
@@ -42,6 +43,10 @@ def incomming_csv(request):
     if seller:
         incomming_shoes = incomming_shoes.filter(seller__name__contains=seller)
 
+    order_nr = request.GET.get('on')
+    if order_nr:
+        incomming_shoes = incomming_shoes.filter(order_nr__contains=order_nr)
+
     order_date = request.GET.get('od')
     if order_date:
         order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -49,7 +54,7 @@ def incomming_csv(request):
 
     for nr, shoe in enumerate(incomming_shoes):
         writer.writerow([nr+1, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.order_date, shoe.seller, shoe.comment])
+                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment])
 
     return response
 
@@ -66,7 +71,7 @@ def storage_csv(request):
 
     writer = csv.writer(response, delimiter=';')
     writer.writerow(['Nr magazynowy', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
+                     'Rozmiar', 'CW', 'Nr zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
                      'Data przyjecia', 'Nr faktury kupna', 'Data faktury kupna'])
 
     in_storage_shoes = InStorageShoe.objects.all()
@@ -80,6 +85,11 @@ def storage_csv(request):
         in_storage_shoes = in_storage_shoes.filter(
             seller__name__contains=seller)
 
+    order_nr = request.GET.get('on')
+    if order_nr:
+        in_storage_shoes = in_storage_shoes.filter(
+            order_nr__contains=order_nr)
+
     order_date = request.GET.get('od')
     if order_date:
         order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -91,8 +101,8 @@ def storage_csv(request):
         in_storage_shoes = in_storage_shoes.filter(entry_date=entry_date)
 
     for shoe in in_storage_shoes:
-        writer.writerow([shoe.id, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.order_date, shoe.seller, shoe.comment,
+        writer.writerow([shoe.storage_nr, shoe.email, shoe.buy_price, shoe.name,
+                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment,
                          shoe.entry_date, shoe.buy_invoice_nr, shoe.buy_invoice_date])
 
     return response
@@ -110,11 +120,11 @@ def archives_csv(request):
 
     writer = csv.writer(response, delimiter=';')
     writer.writerow(['Nr magazynowy', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
+                     'Rozmiar', 'CW', 'Nr zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
                      'Data przyjecia', 'Nr faktury kupna', 'Data faktury kupna',
                      'Data wydania', 'Nr faktury sprzedazy', 'Data faktury sprzedazy',
                      'Data wpływu na konto', 'Cena sprzedazy', 'Kupujący',
-                     'Numer listu przewozowego', 'Nr StockX', 'CW'])
+                     'Numer listu przewozowego', 'Nr StockX'])
 
     sold_shoes = SoldShoe.objects.all()
 
@@ -129,6 +139,10 @@ def archives_csv(request):
     buyer = request.GET.get('b')
     if buyer:
         sold_shoes = sold_shoes.filter(buyer__name__contains=buyer)
+
+    order_nr = request.GET.get('on')
+    if order_nr:
+        sold_shoes = sold_shoes.filter(order_nr__contains=order_nr)
 
     order_date = request.GET.get('od')
     if order_date:
@@ -147,11 +161,11 @@ def archives_csv(request):
 
     for shoe in sold_shoes:
         writer.writerow([shoe.storage_nr, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.order_date, shoe.seller, shoe.comment,
+                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment,
                          shoe.entry_date, shoe.buy_invoice_nr, shoe.buy_invoice_date,
                          shoe.exit_date, shoe.sell_invoice_nr, shoe.sell_invoice_date,
                          shoe.money_income_date, shoe.sell_price, shoe.buyer,
-                         shoe.tracking_nr, shoe.stockx_nr, shoe.cw])
+                         shoe.tracking_nr, shoe.stockx_nr])
 
     return response
 
@@ -168,7 +182,7 @@ def missing_storage_csv(request):
 
     writer = csv.writer(response, delimiter=';')
     writer.writerow(['Nr magazynowy', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
+                     'Rozmiar', 'CW', 'Numer zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
                      'Data przyjecia', 'Nr faktury kupna', 'Data faktury kupna'])
 
     missing_storage = InStorageShoe.objects.filter(
@@ -184,6 +198,11 @@ def missing_storage_csv(request):
         missing_storage = missing_storage.filter(
             seller__name__contains=seller)
 
+    order_nr = request.GET.get('on')
+    if order_nr:
+        missing_storage = missing_storage.filter(
+            order_nr__contains=order_nr)
+
     order_date = request.GET.get('od')
     if order_date:
         order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -195,8 +214,8 @@ def missing_storage_csv(request):
         missing_storage = missing_storage.filter(entry_date=entry_date)
 
     for shoe in missing_storage:
-        writer.writerow([shoe.id, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.order_date, shoe.seller, shoe.comment,
+        writer.writerow([shoe.storage_nr, shoe.email, shoe.buy_price, shoe.name,
+                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment,
                          shoe.entry_date, shoe.buy_invoice_nr, shoe.buy_invoice_date])
 
     return response
@@ -214,11 +233,11 @@ def missing_archives_csv(request):
 
     writer = csv.writer(response, delimiter=';')
     writer.writerow(['Nr magazynowy', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
+                     'Rozmiar', 'CW', 'Numer zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
                      'Data przyjecia', 'Nr faktury kupna', 'Data faktury kupna',
                      'Data wydania', 'Nr faktury sprzedazy', 'Data faktury sprzedazy',
                      'Data wpływu na konto', 'Cena sprzedazy', 'Kupujący',
-                     'Numer listu przewozowego', 'Nr StockX', 'CW'])
+                     'Numer listu przewozowego', 'Nr StockX'])
 
     missing_archives = SoldShoe.objects.filter(
         Q(buy_invoice_nr__exact='') | Q(buy_invoice_date__isnull=True) |
@@ -242,6 +261,11 @@ def missing_archives_csv(request):
         missing_archives = missing_archives.filter(
             buyer__name__contains=buyer)
 
+    order_nr = request.GET.get('on')
+    if order_nr:
+        missing_archives = missing_archives.filter(
+            order_nr__contains=order_nr)
+
     order_date = request.GET.get('od')
     if order_date:
         order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -259,11 +283,11 @@ def missing_archives_csv(request):
 
     for shoe in missing_archives:
         writer.writerow([shoe.storage_nr, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.order_date, shoe.seller, shoe.comment,
+                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment,
                          shoe.entry_date, shoe.buy_invoice_nr, shoe.buy_invoice_date,
                          shoe.exit_date, shoe.sell_invoice_nr, shoe.sell_invoice_date,
                          shoe.money_income_date, shoe.sell_price, shoe.buyer,
-                         shoe.tracking_nr, shoe.stockx_nr, shoe.cw])
+                         shoe.tracking_nr, shoe.stockx_nr])
 
     return response
 
@@ -339,16 +363,18 @@ class CreateIncommingCsv(LoginRequiredMixin, TemplateView):
             for nr, incomming in enumerate(incommings[1:]):
                 line = incomming.split(';')
 
-                if len(line) == 7:
+                if len(line) == 9:
                     try:
                         new_incomming = IncommingShoe.objects.create(
                             email=line[0],
                             buy_price=line[1],
                             name=line[2],
                             size=line[3],
-                            order_date=line[4],
-                            seller=Seller.objects.get(name=line[5]),
-                            comment=line[6],
+                            cw=line[4],
+                            order_nr=line[5],
+                            order_date=line[6],
+                            seller=Seller.objects.get(name=line[7]),
+                            comment=line[8],
                         )
 
                         added += 1
@@ -414,6 +440,11 @@ class CheckIncomming(LoginRequiredMixin, TemplateView):
             context['incommings'] = context['incommings'].filter(
                 seller__name__contains=seller)
 
+        order_nr = self.request.GET.get('on')
+        if order_nr:
+            context['incommings'] = context['incommings'].filter(
+                order_nr__contains=order_nr)
+
         order_date = self.request.GET.get('od')
         if order_date:
             order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -446,6 +477,11 @@ class EntryInSingle(LoginRequiredMixin, TemplateView):
             context['incommings'] = context['incommings'].filter(
                 seller__name__contains=seller)
 
+        order_nr = self.request.GET.get('on')
+        if order_nr:
+            context['incommings'] = context['incommings'].filter(
+                order_nr__contains=order_nr)
+
         order_date = self.request.GET.get('od')
         if order_date:
             order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -466,16 +502,38 @@ class CreateSingleEntryIn(LoginRequiredMixin, DetailView):
         context['incomming'] = IncommingShoe.objects.get(
             id=self.get_object().pk)
 
+        max_storage_nr_storage = InStorageShoe.objects.aggregate(
+            Max('storage_nr'))
+        max_storage_nr_archives = SoldShoe.objects.aggregate(Max('storage_nr'))
+        context['max_storage_nr'] = max(
+            [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
+
         return context
 
     def post(self, request, *args, **kwargs):
         form = EntryInForm(request.POST)
         if form.is_valid():
             try:
+                SoldShoe.objects.get(
+                    storage_nr=form.cleaned_data['storage_nr'])
+
+                messages.error(
+                    request, 'Podczas przyjmowania przesyłki na magazyn wystąpił błąd!')
+                messages.error(
+                    request, 'Sprawdź czy numer magazynowy nie istnieje już na magazynie!')
+
+                return redirect('create-single-entry-in', pk=self.get_object().pk)
+
+            except:
+                pass
+
+            try:
                 incomming_shoe = IncommingShoe.objects.get(
                     id=self.get_object().pk)
 
                 in_storage_shoe = InStorageShoe.objects.create(
+                    storage_nr=form.cleaned_data['storage_nr'],
+
                     email=incomming_shoe.email,
                     buy_price=incomming_shoe.buy_price,
                     name=incomming_shoe.name,
@@ -493,13 +551,18 @@ class CreateSingleEntryIn(LoginRequiredMixin, DetailView):
                 incomming_shoe.delete()
 
                 messages.success(
-                    request, f'Pomyślnie przyjęto przesyłkę na magazyn! Numer magazynowy przesyłki to: {in_storage_shoe.id}')
+                    request, f'Pomyślnie przyjęto przesyłkę na magazyn! Numer magazynowy przesyłki to: {in_storage_shoe.storage_nr}')
                 return redirect('entry-in-single')
             except:
                 pass
 
         messages.error(
             request, 'Podczas przyjmowania przesyłki na magazyn wystąpił błąd!')
+
+        if 'storage_nr' in form.errors.as_data().keys():
+            messages.error(
+                request, 'Sprawdź czy numer magazynowy nie istnieje już na magazynie!')
+
         return redirect('create-single-entry-in', pk=self.get_object().pk)
 
 
@@ -510,6 +573,12 @@ class EntryInCsv(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = InputCsvForm()
+
+        max_storage_nr_storage = InStorageShoe.objects.aggregate(
+            Max('storage_nr'))
+        max_storage_nr_archives = SoldShoe.objects.aggregate(Max('storage_nr'))
+        context['max_storage_nr'] = max(
+            [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
 
         return context
 
@@ -527,33 +596,39 @@ class EntryInCsv(LoginRequiredMixin, TemplateView):
             for nr, entry_in in enumerate(entry_ins[1:]):
                 line = entry_in.split(';')
 
-                if len(line) == 10:
+                if len(line) == 13:
                     try:
                         incommings = IncommingShoe.objects.filter(
-                            email=line[0],
-                            buy_price=line[1],
-                            name=line[2],
-                            size=line[3],
-                            order_date=line[4],
-                            seller=Seller.objects.get(name=line[5]),
-                            comment=line[6],
+                            email=line[1],
+                            buy_price=line[2],
+                            name=line[3],
+                            size=line[4],
+                            cw=line[5],
+                            order_nr=line[6],
+                            order_date=line[7],
+                            seller=Seller.objects.get(name=line[8]),
+                            comment=line[9],
                         )
 
                         if incommings:
                             incomming = incommings.first()
 
                             new_entry_in = InStorageShoe.objects.create(
-                                email=line[0],
-                                buy_price=line[1],
-                                name=line[2],
-                                size=line[3],
-                                order_date=line[4],
-                                seller=Seller.objects.get(name=line[5]),
-                                comment=line[6],
+                                storage_nr=line[0],
 
-                                entry_date=line[7],
-                                buy_invoice_nr=line[8],
-                                buy_invoice_date=line[9] if line[9] else None,
+                                email=line[1],
+                                buy_price=line[2],
+                                name=line[3],
+                                size=line[4],
+                                cw=line[5],
+                                order_nr=line[6],
+                                order_date=line[7],
+                                seller=Seller.objects.get(name=line[8]),
+                                comment=line[9],
+
+                                entry_date=line[10],
+                                buy_invoice_nr=line[11],
+                                buy_invoice_date=line[12] if line[12] else None,
                             )
 
                             incomming.delete()
@@ -599,6 +674,12 @@ class AddToStorageCsv(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['form'] = InputCsvForm()
 
+        max_storage_nr_storage = InStorageShoe.objects.aggregate(
+            Max('storage_nr'))
+        max_storage_nr_archives = SoldShoe.objects.aggregate(Max('storage_nr'))
+        context['max_storage_nr'] = max(
+            [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -615,20 +696,24 @@ class AddToStorageCsv(LoginRequiredMixin, TemplateView):
             for nr, entry_in in enumerate(entry_ins[1:]):
                 line = entry_in.split(';')
 
-                if len(line) == 10:
+                if len(line) == 13:
                     try:
                         new_entry_in = InStorageShoe.objects.create(
-                            email=line[0],
-                            buy_price=line[1],
-                            name=line[2],
-                            size=line[3],
-                            order_date=line[4],
-                            seller=Seller.objects.get(name=line[5]),
-                            comment=line[6],
+                            storage_nr=line[0],
 
-                            entry_date=line[7],
-                            buy_invoice_nr=line[8],
-                            buy_invoice_date=line[9] if line[9] else None,
+                            email=line[1],
+                            buy_price=line[2],
+                            name=line[3],
+                            size=line[4],
+                            cw=line[5],
+                            order_nr=line[6],
+                            order_date=line[7],
+                            seller=Seller.objects.get(name=line[8]),
+                            comment=line[9],
+
+                            entry_date=line[10],
+                            buy_invoice_nr=line[11],
+                            buy_invoice_date=line[12] if line[12] else None,
                         )
 
                         added += 1
@@ -694,6 +779,11 @@ class CheckStorage(LoginRequiredMixin, TemplateView):
             context['in_storage'] = context['in_storage'].filter(
                 seller__name__contains=seller)
 
+        order_nr = self.request.GET.get('on')
+        if order_nr:
+            context['in_storage'] = context['in_storage'].filter(
+                order_nr__contains=order_nr)
+
         order_date = self.request.GET.get('od')
         if order_date:
             order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -732,6 +822,11 @@ class SendSingle(LoginRequiredMixin, TemplateView):
             context['in_storage'] = context['in_storage'].filter(
                 seller__name__contains=seller)
 
+        order_nr = self.request.GET.get('on')
+        if order_nr:
+            context['in_storage'] = context['in_storage'].filter(
+                order_nr__contains=order_nr)
+
         order_date = self.request.GET.get('od')
         if order_date:
             order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -768,10 +863,14 @@ class CreateSingleSend(LoginRequiredMixin, DetailView):
                     id=self.get_object().pk)
 
                 sold_shoe = SoldShoe.objects.create(
+                    storage_nr=in_storage_shoe.storage_nr,
+
                     email=in_storage_shoe.email,
                     buy_price=in_storage_shoe.buy_price,
                     name=in_storage_shoe.name,
                     size=in_storage_shoe.size,
+                    cw=in_storage_shoe.cw,
+                    order_nr=in_storage_shoe.order_nr,
                     order_date=in_storage_shoe.order_date,
                     seller=in_storage_shoe.seller,
                     comment=in_storage_shoe.comment,
@@ -780,7 +879,6 @@ class CreateSingleSend(LoginRequiredMixin, DetailView):
                     buy_invoice_nr=in_storage_shoe.buy_invoice_nr,
                     buy_invoice_date=in_storage_shoe.buy_invoice_date,
 
-                    storage_nr=in_storage_shoe.id,
                     exit_date=form.cleaned_data['exit_date'],
                     sell_invoice_nr=form.cleaned_data['sell_invoice_nr'] if form.cleaned_data[
                         'sell_invoice_nr'] is not None else "",
@@ -790,7 +888,6 @@ class CreateSingleSend(LoginRequiredMixin, DetailView):
                     buyer=form.cleaned_data['buyer'],
                     tracking_nr=form.cleaned_data['tracking_nr'] if form.cleaned_data['tracking_nr'] is not None else "",
                     stockx_nr=form.cleaned_data['stockx_nr'] if form.cleaned_data['stockx_nr'] is not None else "",
-                    cw=form.cleaned_data['cw'] if form.cleaned_data['cw'] is not None else "",
                 )
 
                 in_storage_shoe.delete()
@@ -798,12 +895,16 @@ class CreateSingleSend(LoginRequiredMixin, DetailView):
                 messages.success(
                     request, f'Pomyślnie wysłano przesyłkę! Numer magazynowy przesyłki: {sold_shoe.storage_nr}')
                 return redirect('send-single')
+
+            except IntegrityError:
+                messages.error(
+                    request, 'Sprawdź czy numer magazynowy nie istnieje już na magazynie!')
             except:
                 pass
 
         messages.error(
             request, 'Podczas wysyłania przesyłki wystąpił błąd!')
-        return redirect('create-single-entry-in', pk=self.get_object().pk)
+        return redirect('create-single-send', pk=self.get_object().pk)
 
 
 class CreateSendCsv(LoginRequiredMixin, TemplateView):
@@ -830,47 +931,66 @@ class CreateSendCsv(LoginRequiredMixin, TemplateView):
             for nr, send in enumerate(sends[1:]):
                 line = send.split(';')
 
-                if len(line) == 20:
+                if len(line) == 21:
                     try:
                         in_storage = InStorageShoe.objects.get(
-                            id=line[0],
+                            storage_nr=line[0],
+
+                            email=line[1],
+                            buy_price=line[2],
+                            name=line[3],
+                            size=line[4],
+                            cw=line[5],
+                            order_nr=line[6],
+                            order_date=line[7],
+                            seller=Seller.objects.get(name=line[8]),
+                            comment=line[9],
+
+                            entry_date=line[10],
+                            buy_invoice_nr=line[11],
+                            buy_invoice_date=line[12] if line[12] else None,
                         )
 
                         if in_storage:
                             new_send = SoldShoe.objects.create(
+                                storage_nr=line[0],
+
                                 email=line[1],
                                 buy_price=line[2],
                                 name=line[3],
                                 size=line[4],
-                                order_date=line[5],
-                                seller=Seller.objects.get(name=line[6]),
-                                comment=line[7],
+                                cw=line[5],
+                                order_nr=line[6],
+                                order_date=line[7],
+                                seller=Seller.objects.get(name=line[8]),
+                                comment=line[9],
 
-                                entry_date=line[8],
-                                buy_invoice_nr=line[9],
-                                buy_invoice_date=line[10] if line[10] else None,
+                                entry_date=line[10],
+                                buy_invoice_nr=line[11],
+                                buy_invoice_date=line[12] if line[12] else None,
 
-                                storage_nr=line[0],
-                                exit_date=line[11] if line[11] else None,
-                                sell_invoice_nr=line[12],
-                                sell_invoice_date=line[13] if line[13] else None,
-                                money_income_date=line[14] if line[14] else None,
-                                sell_price=line[15],
+                                exit_date=line[13] if line[13] else None,
+                                sell_invoice_nr=line[14],
+                                sell_invoice_date=line[15] if line[15] else None,
+                                money_income_date=line[16] if line[16] else None,
+                                sell_price=line[17] if line[17] else 0,
                                 buyer=Buyer.objects.get(
-                                    name=line[16]) if line[16] else None,
-                                tracking_nr=line[17],
-                                stockx_nr=line[18],
-                                cw=line[19],
+                                    name=line[18]) if line[18] else None,
+                                tracking_nr=line[19],
+                                stockx_nr=line[20],
                             )
 
                             in_storage.delete()
+
+                            print('HERE')
 
                             added += 1
                             added_ids.append(new_send.id)
                         else:
                             not_added += 1
                             not_added_line_nr.append(nr + 1)
-                    except:
+                    except Exception as e:
+                        print(e)
                         not_added += 1
                         not_added_line_nr.append(nr + 1)
                 else:
@@ -922,31 +1042,34 @@ class AddToArchivesCsv(LoginRequiredMixin, TemplateView):
             for nr, send in enumerate(sends[1:]):
                 line = send.split(';')
 
-                if len(line) == 20:
+                if len(line) == 21:
                     try:
                         new_send = SoldShoe.objects.create(
+                            storage_nr=line[0],
+
                             email=line[1],
                             buy_price=line[2],
                             name=line[3],
                             size=line[4],
-                            order_date=line[5],
-                            seller=Seller.objects.get(name=line[6]),
-                            comment=line[7],
+                            cw=line[5],
+                            order_nr=line[6],
+                            order_date=line[7],
+                            seller=Seller.objects.get(name=line[8]),
+                            comment=line[9],
 
-                            entry_date=line[8],
-                            buy_invoice_nr=line[9],
-                            buy_invoice_date=line[10] if line[10] else None,
+                            entry_date=line[10],
+                            buy_invoice_nr=line[11],
+                            buy_invoice_date=line[12] if line[12] else None,
 
-                            storage_nr=line[0],
-                            exit_date=line[11] if line[11] else None,
-                            sell_invoice_nr=line[12],
-                            sell_invoice_date=line[13] if line[13] else None,
-                            money_income_date=line[14] if line[14] else None,
-                            sell_price=line[15],
-                            buyer=Buyer.objects.get(name=line[16]),
-                            tracking_nr=line[17],
-                            stockx_nr=line[18],
-                            cw=line[19],
+                            exit_date=line[13] if line[13] else None,
+                            sell_invoice_nr=line[14],
+                            sell_invoice_date=line[15] if line[15] else None,
+                            money_income_date=line[16] if line[16] else None,
+                            sell_price=line[17] if line[17] else 0,
+                            buyer=Buyer.objects.get(
+                                name=line[18]) if line[18] else None,
+                            tracking_nr=line[19],
+                            stockx_nr=line[20],
                         )
 
                         added += 1
@@ -1016,6 +1139,11 @@ class Archives(LoginRequiredMixin, TemplateView):
         if buyer:
             context['sold_shoes'] = context['sold_shoes'].filter(
                 buyer__name__contains=buyer)
+
+        order_nr = self.request.GET.get('on')
+        if order_nr:
+            context['sold_shoes'] = context['sold_shoes'].filter(
+                order_nr__contains=order_nr)
 
         order_date = self.request.GET.get('od')
         if order_date:
@@ -1090,6 +1218,11 @@ class InputMissingArchives(LoginRequiredMixin, TemplateView):
             context['missing_data_archives'] = context['missing_data_archives'].filter(
                 buyer__name__contains=buyer)
 
+        order_nr = self.request.GET.get('on')
+        if order_nr:
+            context['missing_data_archives'] = context['missing_data_archives'].filter(
+                order_nr__contains=order_nr)
+
         order_date = self.request.GET.get('od')
         if order_date:
             order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
@@ -1130,6 +1263,11 @@ class InputMissingStorage(LoginRequiredMixin, TemplateView):
         if seller:
             context['missing_data_storage'] = context['missing_data_storage'].filter(
                 seller__name__contains=seller)
+
+        order_nr = self.request.GET.get('on')
+        if order_nr:
+            context['missing_data_storage'] = context['missing_data_storage'].filter(
+                order_nr__contains=order_nr)
 
         order_date = self.request.GET.get('od')
         if order_date:
@@ -1172,6 +1310,8 @@ class InputDataArchives(LoginRequiredMixin, DetailView):
                 sold_shoe.buy_price = form.cleaned_data['buy_price']
                 sold_shoe.name = form.cleaned_data['name']
                 sold_shoe.size = form.cleaned_data['size']
+                sold_shoe.cw = form.cleaned_data['cw']
+                sold_shoe.order_nr = form.cleaned_data['order_nr']
                 sold_shoe.order_date = form.cleaned_data['order_date']
                 sold_shoe.seller = form.cleaned_data['seller']
                 sold_shoe.comment = form.cleaned_data['comment']
@@ -1188,7 +1328,6 @@ class InputDataArchives(LoginRequiredMixin, DetailView):
                 sold_shoe.buyer = form.cleaned_data['buyer']
                 sold_shoe.tracking_nr = form.cleaned_data['tracking_nr']
                 sold_shoe.stockx_nr = form.cleaned_data['stockx_nr']
-                sold_shoe.cw = form.cleaned_data['cw']
 
                 sold_shoe.save()
 
@@ -1223,11 +1362,14 @@ class InputDataStorage(LoginRequiredMixin, DetailView):
         if form.is_valid():
             in_storage_shoe = InStorageShoe.objects.get(
                 id=self.get_object().pk)
+
             if in_storage_shoe:
                 in_storage_shoe.email = form.cleaned_data['email']
                 in_storage_shoe.buy_price = form.cleaned_data['buy_price']
                 in_storage_shoe.name = form.cleaned_data['name']
                 in_storage_shoe.size = form.cleaned_data['size']
+                in_storage_shoe.cw = form.cleaned_data['cw']
+                in_storage_shoe.order_nr = form.cleaned_data['order_nr']
                 in_storage_shoe.order_date = form.cleaned_data['order_date']
                 in_storage_shoe.seller = form.cleaned_data['seller']
                 in_storage_shoe.comment = form.cleaned_data['comment']
@@ -1239,11 +1381,12 @@ class InputDataStorage(LoginRequiredMixin, DetailView):
                 in_storage_shoe.save()
 
                 messages.success(
-                    request, f'Pomyślnie uzupełniono dane! Numer magazynowy przesyłki to: {in_storage_shoe.id}')
+                    request, f'Pomyślnie uzupełniono dane! Numer magazynowy przesyłki to: {in_storage_shoe.storage_nr}')
                 return redirect('input-missing-storage')
 
         messages.error(
             request, 'Podczas aktualizowania danych wystąpił błąd!')
+
         return redirect('input-data-storage', pk=self.get_object().pk)
 
 
@@ -1272,6 +1415,8 @@ class EditIncomming(LoginRequiredMixin, DetailView):
                 incomming_shoe.buy_price = form.cleaned_data['buy_price']
                 incomming_shoe.name = form.cleaned_data['name']
                 incomming_shoe.size = form.cleaned_data['size']
+                incomming_shoe.cw = form.cleaned_data['cw']
+                incomming_shoe.order_nr = form.cleaned_data['order_nr']
                 incomming_shoe.order_date = form.cleaned_data['order_date']
                 incomming_shoe.seller = form.cleaned_data['seller']
                 incomming_shoe.comment = form.cleaned_data['comment']
@@ -1305,7 +1450,7 @@ class DeleteIncomming(LoginRequiredMixin, TemplateView):
 
             messages.success(
                 request, 'Pomyślnie usunięto nadchodzącą przesyłkę!')
-            return redirect('chceck-incomming')
+            return redirect('check-incomming')
         except:
             messages.error(
                 request, 'Nie udało się usunąć nadchodzącej przesyłki!')
@@ -1334,11 +1479,14 @@ class EditStorage(LoginRequiredMixin, DetailView):
         if form.is_valid():
             in_storage_shoe = InStorageShoe.objects.get(
                 id=self.get_object().pk)
+
             if in_storage_shoe:
                 in_storage_shoe.email = form.cleaned_data['email']
                 in_storage_shoe.buy_price = form.cleaned_data['buy_price']
                 in_storage_shoe.name = form.cleaned_data['name']
                 in_storage_shoe.size = form.cleaned_data['size']
+                in_storage_shoe.cw = form.cleaned_data['cw']
+                in_storage_shoe.order_nr = form.cleaned_data['order_nr']
                 in_storage_shoe.order_date = form.cleaned_data['order_date']
                 in_storage_shoe.seller = form.cleaned_data['seller']
                 in_storage_shoe.comment = form.cleaned_data['comment']
@@ -1350,11 +1498,16 @@ class EditStorage(LoginRequiredMixin, DetailView):
                 in_storage_shoe.save()
 
                 messages.success(
-                    request, f'Pomyślnie edytowano przesyłkę w magazynie! Numer magazynowy przesyłki to: {in_storage_shoe.id}')
+                    request, f'Pomyślnie edytowano przesyłkę w magazynie! Numer magazynowy przesyłki to: {in_storage_shoe.storage_nr}')
                 return redirect('check-storage')
 
         messages.error(
             request, 'Podczas edytowania przesyłki na magazynie wystąpił błąd!')
+
+        if 'storage_nr' in form.errors.as_data().keys():
+            messages.error(
+                request, 'Sprawdź czy numer magazynowy nie istnieje już na magazynie!')
+
         return redirect('edit-storage', pk=self.get_object().pk)
 
 
@@ -1410,6 +1563,8 @@ class EditArchives(LoginRequiredMixin, DetailView):
                 sold_shoe.buy_price = form.cleaned_data['buy_price']
                 sold_shoe.name = form.cleaned_data['name']
                 sold_shoe.size = form.cleaned_data['size']
+                sold_shoe.cw = form.cleaned_data['cw']
+                sold_shoe.order_nr = form.cleaned_data['order_nr']
                 sold_shoe.order_date = form.cleaned_data['order_date']
                 sold_shoe.seller = form.cleaned_data['seller']
                 sold_shoe.comment = form.cleaned_data['comment']
@@ -1426,7 +1581,6 @@ class EditArchives(LoginRequiredMixin, DetailView):
                 sold_shoe.buyer = form.cleaned_data['buyer']
                 sold_shoe.tracking_nr = form.cleaned_data['tracking_nr']
                 sold_shoe.stockx_nr = form.cleaned_data['stockx_nr']
-                sold_shoe.cw = form.cleaned_data['cw']
 
                 sold_shoe.save()
 
@@ -1436,6 +1590,11 @@ class EditArchives(LoginRequiredMixin, DetailView):
 
         messages.error(
             request, 'Podczas edytowania przesyłki w archiwum wystąpił błąd!')
+
+        if 'storage_nr' in form.errors.as_data().keys():
+            messages.error(
+                request, 'Sprawdź czy numer magazynowy nie istnieje już na magazynie!')
+
         return redirect('edit-archives', pk=self.get_object().pk)
 
 
