@@ -505,8 +505,16 @@ class CreateSingleEntryIn(LoginRequiredMixin, DetailView):
         max_storage_nr_storage = InStorageShoe.objects.aggregate(
             Max('storage_nr'))
         max_storage_nr_archives = SoldShoe.objects.aggregate(Max('storage_nr'))
-        context['max_storage_nr'] = max(
-            [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
+
+        if max_storage_nr_storage['storage_nr__max'] and max_storage_nr_archives['storage_nr__max']:
+            context['max_storage_nr'] = max(
+                [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
+        elif max_storage_nr_storage['storage_nr__max']:
+            context['max_storage_nr'] = max_storage_nr_storage['storage_nr__max']
+        elif max_storage_nr_archives['storage_nr__max']:
+            context['max_storage_nr'] = max_storage_nr_archives['storage_nr__max']
+        else:
+            context['max_storage_nr'] = 0
 
         return context
 
@@ -577,8 +585,16 @@ class EntryInCsv(LoginRequiredMixin, TemplateView):
         max_storage_nr_storage = InStorageShoe.objects.aggregate(
             Max('storage_nr'))
         max_storage_nr_archives = SoldShoe.objects.aggregate(Max('storage_nr'))
-        context['max_storage_nr'] = max(
-            [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
+
+        if max_storage_nr_storage['storage_nr__max'] and max_storage_nr_archives['storage_nr__max']:
+            context['max_storage_nr'] = max(
+                [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
+        elif max_storage_nr_storage['storage_nr__max']:
+            context['max_storage_nr'] = max_storage_nr_storage['storage_nr__max']
+        elif max_storage_nr_archives['storage_nr__max']:
+            context['max_storage_nr'] = max_storage_nr_archives['storage_nr__max']
+        else:
+            context['max_storage_nr'] = 0
 
         return context
 
@@ -677,8 +693,16 @@ class AddToStorageCsv(LoginRequiredMixin, TemplateView):
         max_storage_nr_storage = InStorageShoe.objects.aggregate(
             Max('storage_nr'))
         max_storage_nr_archives = SoldShoe.objects.aggregate(Max('storage_nr'))
-        context['max_storage_nr'] = max(
-            [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
+
+        if max_storage_nr_storage['storage_nr__max'] and max_storage_nr_archives['storage_nr__max']:
+            context['max_storage_nr'] = max(
+                [max_storage_nr_storage['storage_nr__max'], max_storage_nr_archives['storage_nr__max']])
+        elif max_storage_nr_storage['storage_nr__max']:
+            context['max_storage_nr'] = max_storage_nr_storage['storage_nr__max']
+        elif max_storage_nr_archives['storage_nr__max']:
+            context['max_storage_nr'] = max_storage_nr_archives['storage_nr__max']
+        else:
+            context['max_storage_nr'] = 0
 
         return context
 
