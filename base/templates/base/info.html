@@ -23,6 +23,7 @@
         </div>
         <div class="info-content">
             Aplikacja służy do obsługi magazynu. Informacje które możesz tutaj znaleźć dotyczą: nadchodzących przesyłek, przesyłek znajdujących się na magazynie oraz sprzedanych.
+            Możesz również gromadzić informacje o butach wystawionych na sprzedaż.
             Aplikacja sprawdza brakujące dane za Ciebie, tak, abyś nie musiał wszystkiego robić sam.
             Możesz również zobaczyć jak rozwija się twój biznes w zakładce statystyki.
         </div>
@@ -140,6 +141,32 @@
             Pamiętaj o kolejności kolumn, która standardowo wyświetla się na stronie:
 
             <img src="{% static 'media/create_archives_csv.PNG' %}" class="info-wide-img" alt="">
+        </div>
+    </div>
+    <div class="info-div">
+        <div class="info-title">
+            Jak wystawić but na sprzedaż?
+            <div class="arrow"></div>
+        </div>
+        <div class="info-content">
+            Aby wystawić but na sprzedaż wystarczy podać jedną z cen:
+
+            <ul>
+                <li>Cena Alias</li>
+                <li>Cena StockX</li>
+                <li>Cena WTN</li>
+            </ul>
+
+            A następnie kliknąć WYSTAW:
+
+            <img src="{% static 'media/put_on_auction.PNG' %}" class="info-wide-img" alt="">
+            
+            Aby zmienić cenę wystawionego buta, należy dokonać zmiany w zakładce PRZEGLĄDAJ WYSTAWIONE.
+
+            Jest również możliwość usunięcia buta z wystawionych na sprzedaż. 
+            Aby to zrobić należy usunąć ceny (Alias, StockX i WTN) oraz kliknąć WYSTAW.
+
+            <img src="{% static 'media/check_on_auction.PNG' %}" class="info-wide-img" alt="">
         </div>
     </div>
 
