@@ -18,30 +18,32 @@
         <table class="overwiew-table">
             <tr class="table-header">
                 <th>Nr magazynowy</th>
-                <th>Email</th>
-                <th>Cena kupna</th>
+                <th>Data przyjęcia</th>
+                <th>Data faktury kupna</th>
                 <th>Nazwa produktu</th>
                 <th>Rozmiar</th>
-                <th>Data zamówienia</th>
+                <th>CW</th>
                 <th>Sprzedawca</th>
-                <th>Komentarz</th>
-                <th>Data przyjęcia</th>
                 <th>Nr faktury kupna</th>
-                <th>Data faktury kupna</th>
+                <th>Nr zamówienia</th>
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Komentarz</th>
             </tr>
     
             <tr>
                 <th>{{in_storage.storage_nr|default:"--"}}</th>
-                <th>{{in_storage.email}}</th>
-                <th>{{in_storage.buy_price}}</th>
-                <th>{{in_storage.name}}</th>
-                <th>{{in_storage.size}}</th>
-                <th>{{in_storage.order_date|default:"--"}}</th>
-                <th>{{in_storage.seller|default:"--"}}</th>
-                <th>{{in_storage.comment|default:"--"}}</th>
                 <th>{{in_storage.entry_date|default:"--"}}</th>
-                <th>{{in_storage.buy_invoice_nr|default:"--"}}</th>
                 <th>{{in_storage.buy_invoice_date|default:"--"}}</th>
+                <th>{{in_storage.name|default:"--"}}</th>
+                <th>{{in_storage.size|default:"--"}}</th>
+                <th>{{in_storage.cw|default:"--"}}</th>
+                <th>{{in_storage.seller|default:"--"}}</th>
+                <th>{{in_storage.buy_invoice_nr|default:"--"}}</th>
+                <th>{{in_storage.order_nr|default:"--"}}</th>
+                <th>{{in_storage.email|default:"--"}}</th>
+                <th>{{in_storage.buy_price}}</th>
+                <th>{{in_storage.comment|default:"--"}}</th>
             </tr>
             
         </table>

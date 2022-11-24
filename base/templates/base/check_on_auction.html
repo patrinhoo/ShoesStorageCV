@@ -1,0 +1,101 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- PUT ON AUCTION MULTIPLE PAGE -->
+<div class="back-div">
+    <a href="{% url 'put-on-auction' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+<div class="title-wrapper">WYSTAWIONE NA SPRZEDAŻ</div>
+
+
+<div class="filter-wrapper">
+    <form method="GET" action="{% url 'check-on-auction' %}">
+        <label for="name">Nazwa</label><br>
+        <input name="n" id="name" type="text" value="{{request.GET.n}}" placeholder="Wpisz nazwę buta"><br>
+        <label for="storage_nr">Numer magazynowy</label><br>
+        <input name="s" id="storage_nr" type="text" value="{{request.GET.s}}" placeholder="Podaj numer magazynowy"><br>
+
+        <input type="submit" value="SZUKAJ">
+    </form>
+</div>
+
+
+{% if formset.forms %}
+
+<div class="pagination">
+    <div class="previous-page">
+        {% if page_obj.has_previous %}
+        <div>
+            <a href="{% url 'put-on-auction-multiple' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}&page=1">&laquo; Pierwsza</a>
+        </div>
+
+        <div>
+            <a href="{% url 'put-on-auction-multiple' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}&page={{page_obj.previous_page_number}}">&laquo; Poprzednia</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="current-page">
+        Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+    </div>
+    
+    <div class="next-page">
+        {% if page_obj.has_next %}
+        <div>
+            <a href="{% url 'put-on-auction-multiple' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}&page={{page_obj.next_page_number}}">Następna &raquo;</a>
+        </div>
+
+        <div>
+            <a href="{% url 'put-on-auction-multiple' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}&page={{page_obj.paginator.num_pages}}">Ostatnia &raquo;</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<div class="create-single-wrapper">
+    <form method="POST" action="">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <input type="submit" value="WYSTAW">
+
+        <div class="on-auction-table-wrapper"> 
+            <table class="on-auction-table">
+                <tr class="table-header">
+                    <th class="first-column">But w magazynie</th>
+                    <th>Cena Alias</th>
+                    <th>Cena StockX</th>
+                    <th>Cena WTN</th>
+                </tr>
+                
+                {% for form in formset %}
+                <tr>
+                    <th class="first-column">{{form.in_storage_shoe}}</th>
+                    <th>{{form.alias_price}}</th>
+                    <th>{{form.stockx_price}}</th>
+                    <th>{{form.wtn_price}}</th>
+                </tr>
+                {% endfor %}
+            
+            </table>
+        </div>
+    </form>
+</div>
+
+{% else %}
+
+<div class="no-shoes">
+    BRAK WYSTAWIONYCH BUTÓW
+</div>
+
+{% endif %}
+
+{% endblock content %}

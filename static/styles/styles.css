@@ -337,7 +337,6 @@ button {
 
 /* CREATE INCOMMING PAGE */
 .create-single-wrapper {
-    max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
     padding-left: 1rem;
@@ -431,7 +430,6 @@ button {
 
 /* CHECK INCOMMING PAGE */
 .check-incomming-wrapper {
-    max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
     padding-left: 1rem;
@@ -458,6 +456,11 @@ tr:nth-child(odd) {
 
 tr:first-child {
     background: #AAA;
+}
+
+.overwiew-table {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .overwiew-table tr th {
@@ -523,8 +526,10 @@ tr:first-child {
 /* CREATE SINGLE ENTRY IN PAGE */
 .create-single-wrapper table {
     border: 2px solid #999;
+    margin-left: auto;
+    margin-right: auto;
     display: block; 
-    overflow: auto;
+    overflow-x: auto;
 }
 
 
@@ -654,7 +659,6 @@ input[type=file] {
 }
 
 .create-csv-wrapper {
-    max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
     padding-left: 1rem;
@@ -687,6 +691,9 @@ input[type=file] {
 .create-csv-wrapper table {
     display: block; 
     overflow-x: auto;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: fit-content;
 }
 
 /* CREATED INCOMMINGS */
@@ -731,6 +738,20 @@ input[type=file] {
 }
 
 /* INFO  */
+.info-wrapper{
+    max-width: 1000px;
+
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+
+    overflow-x: auto;
+}
+
 .info-div{
     margin-bottom: 1rem;
 }
@@ -884,6 +905,79 @@ input[type=file] {
 
 .back-a input[type='button']:hover {
     background-color: #dd3333;
+}
+
+/* ON AUCTION PAGE */
+.on-auction-table-wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    overflow-x: auto;
+}
+
+.on-auction-table {
+    border: 2px solid #999;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: fit-content;
+    margin-top: 1rem;
+}
+
+.on-auction-table tr th {
+    padding-top: .2rem;
+    padding-bottom: .2rem;
+    padding-left: .5rem;
+    padding-right: .5rem;
+    font-weight: normal;
+}
+
+.on-auction-table .table-header th {
+    font-weight: bold;
+}
+
+.on-auction-table .first-column select {
+    width: 350px;
+}
+
+/* PAGINATION */
+.pagination {
+    width: calc(100% - 8rem);
+    display: flex;
+    margin-left: 4rem;
+    margin-right: 4rem;
+    margin-top: 2rem;
+}
+
+.previous-page {
+    width: 120px;
+}
+
+.previous-page a {
+    color: #dd3333;
+    text-decoration: none;
+}
+
+.previous-page a:hover {
+    font-weight: bold;
+}
+
+.next-page {
+    width: 120px;
+    text-align: right;
+}
+
+.next-page a {
+    color: #dd3333;
+    text-decoration: none;
+}
+
+.next-page a:hover {
+    font-weight: bold;
+}
+
+.current-page {
+    width: calc(100% - 240px);
+    text-align: center;
 }
 
 

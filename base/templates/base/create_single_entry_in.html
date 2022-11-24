@@ -17,22 +17,28 @@
         
         <table class="overwiew-table">
             <tr class="table-header">
-                <th>Email</th>
-                <th>Cena kupna</th>
+                <th>Data zamówienia</th>
                 <th>Nazwa produktu</th>
                 <th>Rozmiar</th>
-                <th>Data zamówienia</th>
+                <th>CW</th>
                 <th>Sprzedawca</th>
+                <th>Nr faktury kupna</th>
+                <th>Nr zamówienia</th>
+                <th>Email</th>
+                <th>Cena kupna</th>
                 <th>Komentarz</th>
             </tr>
     
             <tr>
-                <th>{{incomming.email}}</th>
-                <th>{{incomming.buy_price}}</th>
-                <th>{{incomming.name}}</th>
-                <th>{{incomming.size}}</th>
                 <th>{{incomming.order_date|default:"--"}}</th>
+                <th>{{incomming.name|default:"--"}}</th>
+                <th>{{incomming.size|default:"--"}}</th>
+                <th>{{incomming.cw|default:"--"}}</th>
                 <th>{{incomming.seller|default:"--"}}</th>
+                <th>{{incomming.buy_invoice_nr|default:"--"}}</th>
+                <th>{{incomming.order_nr|default:"--"}}</th>
+                <th>{{incomming.email|default:"--"}}</th>
+                <th>{{incomming.buy_price}}</th>
                 <th>{{incomming.comment|default:"--"}}</th>
             </tr>
             

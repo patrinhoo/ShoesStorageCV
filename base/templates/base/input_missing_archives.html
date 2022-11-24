@@ -27,9 +27,7 @@
 
         <label for="order_nr">Numer zamówienia</label><br>
         <input name="on" id="order_nr" type="text" value="{{request.GET.on}}" placeholder="Wpisz numer zamówienia"><br>
-        <label for="order_date">Data zamówienia</label><br>
-        <input name="od" id="order_date" type="date" value="{{request.GET.od}}" placeholder="Wybierz datę zamówienia"><br>
-        <label for="entry_date">Data przyjęcia</label><br>
+       <label for="entry_date">Data przyjęcia</label><br>
         <input name="ed" id="entry_date" type="date" value="{{request.GET.ed}}" placeholder="Wybierz datę przyjęcia"><br>
         <label for="send_date">Data wydania</label><br>
         <input name="sd" id="send_date" type="date" value="{{request.GET.sd}}" placeholder="Wybierz datę wydania"><br>
@@ -39,83 +37,118 @@
 </div>
 
 
-{% if missing_data_archives %}
+{% if object_list %}
 <div class="to-csv">
-    <a href="{% url 'missing-archives-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&od={{request.GET.od}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}">
+    <a href="{% url 'missing-archives-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}">
         <input type="button" value="POBIERZ CSV" name="" id="">
     </a>
 </div>
 {% endif %}
 
+{% if object_list %}
+
+<div class="pagination">
+    <div class="previous-page">
+        {% if page_obj.has_previous %}
+        <div>
+            <a href="{% url 'input-missing-archives' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}&page=1">&laquo; Pierwsza</a>
+        </div>
+
+        <div>
+            <a href="{% url 'input-missing-archives' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}&page={{page_obj.previous_page_number}}">&laquo; Poprzednia</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="current-page">
+        Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+    </div>
+    
+    <div class="next-page">
+        {% if page_obj.has_next %}
+        <div>
+            <a href="{% url 'input-missing-archives' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}&page={{page_obj.next_page_number}}">Następna &raquo;</a>
+        </div>
+
+        <div>
+            <a href="{% url 'input-missing-archives' %}?n={{request.GET.n}}&s={{request.GET.s}}&b={{request.GET.b}}&on={{request.GET.on}}&ed={{request.GET.ed}}&sd={{request.GET.sd}}&page={{page_obj.paginator.num_pages}}">Ostatnia &raquo;</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
 <div class="check-incomming-wrapper">
-    {% if missing_data_archives %}
 
     <table class="overwiew-table">
         <tr class="table-header">
             <th></th>
             <th>Nr magazynowy</th>
-            <th>Email</th>
-            <th>Cena kupna</th>
+            <th>Data przyjęcia</th>
+            <th>Data wydania</th>
+            <th>Data faktury kupna</th>
+            <th>Data faktury sprzedaży</th>
+            <th>Data wpływu na konto</th>
+            <th>Data faktury StockX</th>
             <th>Nazwa produktu</th>
             <th>Rozmiar</th>
             <th>CW</th>
-            <th>Numer zamówienia</th>
-            <th>Data zamówienia</th>
-            <th>Sprzedawca</th>
-            <th>Komentarz</th>
-            <th>Data przyjęcia</th>
-            <th>Nr faktury kupna</th>
-            <th>Data faktury kupna</th>
-            <th>Data wydania</th>
-            <th>Nr faktury sprzedaży</th>
-            <th>Data faktury sprzedaży</th>
-            <th>Data wpływu na konto</th>
-            <th>Cena sprzedaży</th>
-            <th>Kupujący</th>
-            <th>Nr listu przewozowego</th>
             <th>Nr StockX</th>
+            <th>Nr faktury sprzedaży</th>
+            <th>Nr listu przewozowego</th>
+            <th>Sprzedawca</th>
+            <th>Nr faktury kupna</th>
+            <th>Nr zamówienia</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Cena sprzedaży</th>
+            <th>Cena Alias</th>
+            <th>Kupujący</th>
+            <th>Komentarz</th>
+            <th>Kurs waluty</th>
         </tr>
     
 
-        {% for shoe in missing_data_archives %}
+        {% for shoe in object_list %}
 
         <tr>
             <th class="input-data"><a href="{% url 'input-data-archives' shoe.id %}">UZUPEŁNIJ</a></th>
             <th>{{shoe.storage_nr|default:"--"}}</th>
-            <th>{{shoe.email}}</th>
-            <th>{{shoe.buy_price}}</th>
-            <th>{{shoe.name}}</th>
-            <th>{{shoe.size}}</th>
-            <th>{{shoe.cw|default:"--"}}</th>
-            <th>{{shoe.order_nr|default:"--"}}</th>
-            <th>{{shoe.order_date|default:"--"}}</th>
-            <th>{{shoe.seller|default:"--"}}</th>
-            <th>{{shoe.comment|default:"--"}}</th>
             <th>{{shoe.entry_date|default:"--"}}</th>
-            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
-            <th>{{shoe.buy_invoice_date|default:"--"}}</th>
             <th>{{shoe.exit_date|default:"--"}}</th>
-            <th>{{shoe.sell_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_date|default:"--"}}</th>
             <th>{{shoe.sell_invoice_date|default:"--"}}</th>
             <th>{{shoe.money_income_date|default:"--"}}</th>
-            <th>{{shoe.sell_price|default:"--"}}</th>
-            <th>{{shoe.buyer|default:"--"}}</th>
-            <th>{{shoe.tracking_nr|default:"--"}}</th>
+            <th>{{shoe.stockx_invoice_date|default:"--"}}</th>
+            <th>{{shoe.name|default:"--"}}</th>
+            <th>{{shoe.size|default:"--"}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
             <th>{{shoe.stockx_nr|default:"--"}}</th>
+            <th>{{shoe.sell_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.tracking_nr|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.order_nr|default:"--"}}</th>
+            <th>{{shoe.email|default:"--"}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.sell_price|default:"--"}}</th>
+            <th>{{shoe.eur_alias|default:"--"}}</th>
+            <th>{{shoe.buyer|default:"--"}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
+            <th>{{shoe.exchange_rate|default:"--"}}</th>
         </tr>
 
         {% endfor %}
         
     </table>
 
-    {% else %}
-
-    <div class="no-shoes">
-        WSZYSTKIE BUTY W ARCHIWUM MAJĄ UZUPEŁNIONE DANE
-    </div>
-
-    {% endif %}
-
 </div>
+
+{% else %}
+
+<div class="no-shoes">
+    WSZYSTKIE BUTY W ARCHIWUM MAJĄ UZUPEŁNIONE DANE
+</div>
+
+{% endif %}
 
 {% endblock content %}

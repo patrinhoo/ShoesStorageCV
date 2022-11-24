@@ -1,0 +1,94 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- SEND ON AUCTION PAGE  -->
+
+<div class="back-div">
+    <a href="{% url 'home' %}">
+        <input type="button" value="Cofnij" name="" id="">
+    </a>
+</div>
+
+{% if edit %}
+<div class="title-wrapper">EDYTOWANE</div>
+{% else %}
+<div class="title-wrapper">WYSTAWIONE NA SPRZEDAŻ</div>
+{% endif %}
+
+<div class="check-incomming-wrapper">
+    {% if send_on_auction %}
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th>But w magazynie</th>
+            <th>Cena Alias</th>
+            <th>Cena StockX</th>
+            <th>Cena WTN</th>
+        </tr>
+    
+
+        {% for on_auction in send_on_auction %}
+
+        <tr>
+            <th>{{on_auction.in_storage_shoe|default:"--"}}</th>
+            <th>{{on_auction.alias_price|default:"--"}}</th>
+            <th>{{on_auction.stockx_price|default:"--"}}</th>
+            <th>{{on_auction.wtn_price|default:"--"}}</th>
+        </tr>
+
+        {% endfor %}
+        
+    </table>
+
+    {% else %}
+
+    <div class="no-shoes">
+        {% if edit %}
+        NIC NIE EDYTOWANO
+        {% else %}
+        NIC NIE WYSTAWIONO
+        {% endif %}
+    </div>
+
+    {% endif %}
+</div>
+
+{% if edit %}
+<div class="title-wrapper">USUNIĘTE</div>
+
+<div class="check-incomming-wrapper">
+    {% if removed_from_auction %}
+
+    <table class="overwiew-table">
+        <tr class="table-header">
+            <th>But w magazynie</th>
+        </tr>
+    
+
+        {% for in_storage_shoe in removed_from_auction %}
+        <tr>
+            <th>{{in_storage_shoe|default:"--"}}</th>
+        </tr>
+        {% endfor %}
+        
+    </table>
+
+    {% else %}
+
+    <div class="no-shoes">
+        NIC NIE USUNIĘTO
+    </div>
+
+    {% endif %}
+</div>
+
+{% endif %}
+
+
+
+
+{% endblock content %}

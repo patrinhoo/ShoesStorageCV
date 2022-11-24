@@ -33,7 +33,7 @@
 </div>
 
 
-{% if incommings %}
+{% if object_list %}
 <div class="to-csv">
     <a href="{% url 'incomming-csv' %}?n={{request.GET.n}}&s={{request.GET.s}}&on={{request.GET.on}}&od={{request.GET.od}}">
         <input type="button" value="POBIERZ CSV" name="" id="">
@@ -41,39 +41,73 @@
 </div>
 {% endif %}
 
+{% if object_list %}
+<div class="pagination">
+    <div class="previous-page">
+        {% if page_obj.has_previous %}
+        <div>
+            <a href="{% url 'check-incomming' %}?n={{request.GET.n}}&s={{request.GET.s}}&on={{request.GET.on}}&od={{request.GET.od}}&page=1">&laquo; Pierwsza</a>
+        </div>
+
+        <div>
+            <a href="{% url 'check-incomming' %}?n={{request.GET.n}}&s={{request.GET.s}}&on={{request.GET.on}}&od={{request.GET.od}}&page={{page_obj.previous_page_number}}">&laquo; Poprzednia</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="current-page">
+        Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+    </div>
+    
+    <div class="next-page">
+        {% if page_obj.has_next %}
+        <div>
+            <a href="{% url 'check-incomming' %}?n={{request.GET.n}}&s={{request.GET.s}}&on={{request.GET.on}}&od={{request.GET.od}}&page={{page_obj.next_page_number}}">Następna &raquo;</a>
+        </div>
+
+        <div>
+            <a href="{% url 'check-incomming' %}?n={{request.GET.n}}&s={{request.GET.s}}&on={{request.GET.on}}&od={{request.GET.od}}&page={{page_obj.paginator.num_pages}}">Ostatnia &raquo;</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
 <div class="check-incomming-wrapper">
-    {% if incommings %}
 
     <table class="overwiew-table">
         <tr class="table-header">
             <th></th>
             <th>Nr</th>
-            <th>Email</th>
-            <th>Cena kupna</th>
+            <th>Data zamówienia</th>
+            <th>Data faktury kupna</th>
             <th>Nazwa produktu</th>
             <th>Rozmiar</th>
             <th>CW</th>
-            <th>Numer zamówienia</th>
-            <th>Data zamówienia</th>
             <th>Sprzedawca</th>
+            <th>Nr faktury kupna</th>
+            <th>Nr zamówienia</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
             <th>Komentarz</th>
             <th></th>
         </tr>
     
 
-        {% for shoe in incommings %}
+        {% for shoe in object_list %}
 
         <tr>
             <th class="input-data"><a href="{% url 'edit-incomming' shoe.id %}">EDYTUJ</a></th>
-            <th>{{forloop.counter}}</th>
-            <th>{{shoe.email}}</th>
-            <th>{{shoe.buy_price}}</th>
-            <th>{{shoe.name}}</th>
-            <th>{{shoe.size}}</th>
-            <th>{{shoe.cw|default:"--"}}</th>
-            <th>{{shoe.order_nr|default:"--"}}</th>
+            <th>{{page_obj.start_index|add:forloop.counter0}}</th>
             <th>{{shoe.order_date|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_date|default:"--"}}</th>
+            <th>{{shoe.name|default:"--"}}</th>
+            <th>{{shoe.size|default:"--"}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
             <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.order_nr|default:"--"}}</th>
+            <th>{{shoe.email|default:"--"}}</th>
+            <th>{{shoe.buy_price}}</th>
             <th>{{shoe.comment|default:"--"}}</th>
             <th class="input-data"><a href="{% url 'delete-incomming' shoe.id %}">USUŃ</a></th>
         </tr>
@@ -82,14 +116,15 @@
         
     </table>
 
-    {% else %}
-
-    <div class="no-shoes">
-        BRAK NADCHODZĄCYCH PRZESYŁEK
-    </div>
-
-    {% endif %}
 </div>
+
+{% else %}
+
+<div class="no-shoes">
+    BRAK NADCHODZĄCYCH PRZESYŁEK
+</div>
+
+{% endif %}
 
 
 

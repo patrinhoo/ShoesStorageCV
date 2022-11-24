@@ -17,28 +17,32 @@
         
         <table class="overwiew-table">
             <tr class="table-header">
-                <th>Email</th>
-                <th>Cena kupna</th>
+                <th>Data zamówienia</th>
+                <th>Data faktury kupna</th>
                 <th>Nazwa produktu</th>
                 <th>Rozmiar</th>
                 <th>CW</th>
-                <th>Numer zamówienia</th>
-                <th>Data zamówienia</th>
                 <th>Sprzedawca</th>
+                <th>Nr faktury kupna</th>
+                <th>Nr zamówienia</th>
+                <th>Email</th>
+                <th>Cena kupna</th>
                 <th>Komentarz</th>
             </tr>
     
             <tr>
-                <th>{{incomming_shoe.email}}</th>
-                <th>{{incomming_shoe.buy_price}}</th>
-                <th>{{incomming_shoe.name}}</th>
-                <th>{{incomming_shoe.size}}</th>
-                <th>{{incomming_shoe.cw|default:"--"}}</th>
-                <th>{{incomming_shoe.order_nr|default:"--"}}</th>
                 <th>{{incomming_shoe.order_date|default:"--"}}</th>
+                <th>{{incomming_shoe.buy_invoice_date|default:"--"}}</th>
+                <th>{{incomming_shoe.name|default:"--"}}</th>
+                <th>{{incomming_shoe.size|default:"--"}}</th>
+                <th>{{incomming_shoe.cw|default:"--"}}</th>
                 <th>{{incomming_shoe.seller|default:"--"}}</th>
+                <th>{{incomming_shoe.buy_invoice_nr|default:"--"}}</th>
+                <th>{{incomming_shoe.order_nr|default:"--"}}</th>
+                <th>{{incomming_shoe.email|default:"--"}}</th>
+                <th>{{incomming_shoe.buy_price}}</th>
                 <th>{{incomming_shoe.comment|default:"--"}}</th>
-            </tr>
+                </tr>
             
         </table>
         

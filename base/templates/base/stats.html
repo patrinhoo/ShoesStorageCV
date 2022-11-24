@@ -200,6 +200,48 @@
         </script>
     </div>
 
+    <!-- PROFIT CHART -->
+    <div class="income-chart">
+        <canvas id="myChart7" width="400" height="200"></canvas>
+        <script>
+        const ctx7 = document.getElementById('myChart7').getContext('2d');
+        const myChart7 = new Chart(ctx7, {
+            type: 'line',
+            data: {
+                labels: [{% for month, values in last_year.items %}{{month}}, {% endfor %}],
+                datasets: [{
+                    label: 'Zwrot podatku',
+                    data: [{% for month, values in last_year.items %}{{values.returned_tax}}, {% endfor %}],
+                    borderColor: [
+                        'rgba(24, 132, 205, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    },
+                    xAxes: {
+                        offset: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'ZWROT PODATKU W OSTATNICH MIESIĄCACH [zł]'
+                    },
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        </script>
+    </div>
+
+
     <div class="charts-row">
         <div class="income-costs-chart">
             <canvas id="myChart5" width="400" height="400"></canvas>

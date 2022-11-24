@@ -22,56 +22,54 @@
         <table class="overwiew-table">
             <tr class="table-header">
                 <th>Nr magazynowy</th>
-                <th>Email</th>
-                <th>Cena kupna</th>
+                <th>Data przyjęcia</th>
+                <th>Data wydania</th>
+                <th>Data faktury kupna</th>
+                <th>Data faktury sprzedaży</th>
+                <th>Data wpływu na konto</th>
+                <th>Data faktury StockX</th>
                 <th>Nazwa produktu</th>
                 <th>Rozmiar</th>
                 <th>CW</th>
-                <th>Numer zamówienia</th>
-                <th>Data zamówienia</th>
-                <th>Sprzedawca</th>
-                <th>Komentarz</th>
-                <th>Data przyjęcia</th>
-                <th>Nr faktury kupna</th>
-                <th>Data faktury kupna</th>
-                <th>Data wydania</th>
-                <th>Nr faktury sprzedaży</th>
-                <th>Data faktury sprzedaży</th>
-                <th>Data wpływu na konto</th>
-                <th>Cena sprzedaży</th>
-                <th>Kupujący</th>
-                <th>Numer listu przewozowego</th>
                 <th>Nr StockX</th>
+                <th>Nr faktury sprzedaży</th>
+                <th>Nr listu przewozowego</th>
+                <th>Sprzedawca</th>
+                <th>Nr faktury kupna</th>
+                <th>Nr zamówienia</th>
+                <th>Email</th>
+                <th>Cena kupna</th>
+                <th>Cena sprzedaży</th>
+                <th>Cena Alias</th>
+                <th>Kupujący</th>
+                <th>Komentarz</th>
+                <th>Kurs waluty</th>
             </tr>
     
             <tr>
-                <th>{{sold_shoe.storage_nr}}</th>
-                <th>{{sold_shoe.email}}</th>
-                <th>{{sold_shoe.buy_price}}</th>
-                <th>{{sold_shoe.name}}</th>
-                <th>{{sold_shoe.size}}</th>
-                <th>{{sold_shoe.cw|default:"--"}}</th>
-                <th>{{sold_shoe.order_nr|default:"--"}}</th>
-                <th>{{sold_shoe.order_date|default:"--"}}</th>
-                <th>{{sold_shoe.seller|default:"--"}}</th>
-                <th>{{sold_shoe.comment|default:"--"}}</th>
+                <th>{{sold_shoe.storage_nr|default:"--"}}</th>
                 <th>{{sold_shoe.entry_date|default:"--"}}</th>
-                <th>{{sold_shoe.buy_invoice_nr|default:"--"}}</th>
-                <th>{{sold_shoe.buy_invoice_date|default:"--"}}</th>
                 <th>{{sold_shoe.exit_date|default:"--"}}</th>
-                <th>{{sold_shoe.sell_invoice_nr|default:"--"}}</th>
+                <th>{{sold_shoe.buy_invoice_date|default:"--"}}</th>
                 <th>{{sold_shoe.sell_invoice_date|default:"--"}}</th>
                 <th>{{sold_shoe.money_income_date|default:"--"}}</th>
-                {% if sold_shoe.sell_price == 0 %}
-                <th>--</th>
-                {% elif sold_shoe.sell_price %}
-                <th>{{sold_shoe.sell_price}}</th>
-                {% else %}
-                <th>--</th>
-                {% endif %}
-                <th>{{sold_shoe.buyer|default:"--"}}</th>
-                <th>{{sold_shoe.tracking_nr|default:"--"}}</th>
+                <th>{{sold_shoe.stockx_invoice_date|default:"--"}}</th>
+                <th>{{sold_shoe.name|default:"--"}}</th>
+                <th>{{sold_shoe.size|default:"--"}}</th>
+                <th>{{sold_shoe.cw|default:"--"}}</th>
                 <th>{{sold_shoe.stockx_nr|default:"--"}}</th>
+                <th>{{sold_shoe.sell_invoice_nr|default:"--"}}</th>
+                <th>{{sold_shoe.tracking_nr|default:"--"}}</th>
+                <th>{{sold_shoe.seller|default:"--"}}</th>
+                <th>{{sold_shoe.buy_invoice_nr|default:"--"}}</th>
+                <th>{{sold_shoe.order_nr|default:"--"}}</th>
+                <th>{{sold_shoe.email|default:"--"}}</th>
+                <th>{{sold_shoe.buy_price}}</th>
+                <th>{{sold_shoe.sell_price|default:"--"}}</th>
+                <th>{{sold_shoe.eur_alias|default:"--"}}</th>
+                <th>{{sold_shoe.buyer|default:"--"}}</th>
+                <th>{{sold_shoe.comment|default:"--"}}</th>
+                <th>{{sold_shoe.exchange_rate|default:"--"}}</th>
             </tr>
             
         </table>

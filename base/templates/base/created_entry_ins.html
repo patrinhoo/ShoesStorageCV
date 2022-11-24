@@ -35,19 +35,18 @@
 
     <table class="overwiew-table">
         <tr class="table-header">
-            <th>Nr Magazynowy</th>
-            <th>Email</th>
-            <th>Cena kupna</th>
+            <th>Nr magazynowy</th>
+            <th>Data przyjęcia</th>
+            <th>Data faktury kupna</th>
             <th>Nazwa produktu</th>
             <th>Rozmiar</th>
             <th>CW</th>
-            <th>Numer zamówienia</th>
-            <th>Data zamówienia</th>
             <th>Sprzedawca</th>
-            <th>Komentarz</th>
-            <th>Data przyjęcia</th>
             <th>Nr faktury kupna</th>
-            <th>Data faktury kupna</th>
+            <th>Nr zamówienia</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Komentarz</th>
         </tr>
     
 
@@ -55,18 +54,17 @@
 
         <tr>
             <th>{{shoe.storage_nr}}</th>
-            <th>{{shoe.email}}</th>
-            <th>{{shoe.buy_price}}</th>
-            <th>{{shoe.name}}</th>
-            <th>{{shoe.size}}</th>
-            <th>{{shoe.cw|default:"--"}}</th>
-            <th>{{shoe.order_nr|default:"--"}}</th>
-            <th>{{shoe.order_date|default:"--"}}</th>
-            <th>{{shoe.seller}}</th>
-            <th>{{shoe.comment|default:"--"}}</th>
             <th>{{shoe.entry_date|default:"--"}}</th>
-            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
             <th>{{shoe.buy_invoice_date|default:"--"}}</th>
+            <th>{{shoe.name|default:"--"}}</th>
+            <th>{{shoe.size|default:"--"}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.order_nr|default:"--"}}</th>
+            <th>{{shoe.email|default:"--"}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
         </tr>
 
         {% endfor %}

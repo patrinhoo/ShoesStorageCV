@@ -38,12 +38,9 @@ urlpatterns = [
          name='add-to-archives-csv'),
     path('archives/', views.Archives.as_view(), name='archives'),
 
-    path('check_missing_data/', views.CheckMissingData.as_view(),
-         name='check-missing-data'),
+
     path('input_missing_data/', views.InputMissingData.as_view(),
          name='input-missing-data'),
-
-
     path('input_missing_archives/', views.InputMissingArchives.as_view(),
          name='input-missing-archives'),
     path('input_missing_storage/', views.InputMissingStorage.as_view(),
@@ -89,6 +86,17 @@ urlpatterns = [
          views.DeleteBuyer.as_view(), name='delete-buyer'),
     path('edit_buyer/<str:pk>/',
          views.EditBuyer.as_view(), name='edit-buyer'),
+
+    path('put_on_auction/', views.PutOnAuction.as_view(),
+         name='put-on-auction'),
+    path('put_on_auction_multiple/', views.PutOnAuctionMultiple.as_view(),
+         name='put-on-auction-multiple'),
+    path('check_on_auction/', views.CheckOnAuction.as_view(),
+         name='check-on-auction'),
+    path('send_on_auction/', views.SendOnAuction.as_view(),
+         name='send-on-auction'),
+    path('edited_on_auction/', views.EditedOnAuction.as_view(),
+         name='edited-on-auction'),
 
     path('stats/', views.Stats.as_view(), name='stats'),
     path('info/', views.Info.as_view(), name='info'),

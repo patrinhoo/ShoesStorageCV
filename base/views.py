@@ -1,38 +1,43 @@
+import codecs
+import csv
+from datetime import datetime
+from itertools import chain
+from operator import attrgetter
+
+from dateutil.relativedelta import relativedelta
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
+from django.core.paginator import Paginator
+from django.db import IntegrityError
+from django.db.models import Max, Q
+from django.forms import formset_factory, modelformset_factory
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import TemplateView, DetailView
-from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.db.models import Q, Max
-from django.db import IntegrityError
-from django.http import HttpResponse
+from django.views.generic import DetailView, ListView, TemplateView
 
-from .models import Buyer, InStorageShoe, IncommingShoe, Seller, SoldShoe
-from .forms import IncommingShoeForm, EntryInForm, SendForm, SoldMissingForm, InStorageMissingForm, InputCsvForm, SellerForm, BuyerForm
+from .forms import (BuyerForm, EntryInForm, IncommingShoeForm, InputCsvForm,
+                    InStorageMissingForm, OnAuctionForm, SellerForm, SendForm,
+                    SoldMissingForm)
+from .models import (Buyer, IncommingShoe, InStorageShoe, OnAuctionShoe,
+                     Seller, SoldShoe)
 
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import csv
+
+class Echo(object):
+    """An object that implements just the write method of the file-like
+    interface.
+    """
+
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
 
 
 # Function based views
 @login_required(login_url='/login/')
 def incomming_csv(request):
-    # Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(
-        content_type='text/csv',
-        headers={
-            'Content-Disposition': f'attachment; filename="PRZYCHODZACE_{datetime.now()}.csv"'},
-    )
-
-    response.write(u'\ufeff'.encode('utf8'))
-
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['Nr', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'CW', 'Nr zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz'])
-
     incomming_shoes = IncommingShoe.objects.all()
 
     name = request.GET.get('n')
@@ -52,28 +57,24 @@ def incomming_csv(request):
         order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
         incomming_shoes = incomming_shoes.filter(order_date=order_date)
 
-    for nr, shoe in enumerate(incomming_shoes):
-        writer.writerow([nr+1, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment])
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer, delimiter=';')
+
+    response = StreamingHttpResponse((chain([codecs.BOM_UTF8],
+                                            writer.writerow(['Nr', 'Data zamowienia', 'Data faktury kupna', 'Nazwa produktu', 'Rozmiar', 'CW',
+                                                             'Sprzedawca', 'Numer faktury kupna', 'Nr zamowienia', 'Email', 'Cena kupna', 'Komentarz']),
+                                            (writer.writerow([nr+1, shoe.order_date, shoe.buy_invoice_date, shoe.name, shoe.size, shoe.cw, shoe.seller,
+                                                              shoe.buy_invoice_nr, shoe.order_nr, shoe.email, shoe.buy_price, shoe.comment])
+                                             for nr, shoe in enumerate(incomming_shoes.iterator(chunk_size=25))))),
+                                     content_type='text/csv',)
+
+    response['Content-Disposition'] = f'attachment; filename="PRZYCHODZACE_{datetime.now()}.csv"'
 
     return response
 
 
 @login_required(login_url='/login/')
 def storage_csv(request):
-    response = HttpResponse(
-        content_type='text/csv',
-        headers={
-            'Content-Disposition': f'attachment; filename="MAGAZYN_{datetime.now()}.csv"'},
-    )
-
-    response.write(u'\ufeff'.encode('utf8'))
-
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['Nr magazynowy', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'CW', 'Nr zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
-                     'Data przyjecia', 'Nr faktury kupna', 'Data faktury kupna'])
-
     in_storage_shoes = InStorageShoe.objects.all()
 
     name = request.GET.get('n')
@@ -90,42 +91,30 @@ def storage_csv(request):
         in_storage_shoes = in_storage_shoes.filter(
             order_nr__contains=order_nr)
 
-    order_date = request.GET.get('od')
-    if order_date:
-        order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-        in_storage_shoes = in_storage_shoes.filter(order_date=order_date)
-
     entry_date = request.GET.get('ed')
     if entry_date:
         entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
         in_storage_shoes = in_storage_shoes.filter(entry_date=entry_date)
 
-    for shoe in in_storage_shoes:
-        writer.writerow([shoe.storage_nr, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment,
-                         shoe.entry_date, shoe.buy_invoice_nr, shoe.buy_invoice_date])
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer, delimiter=';')
+
+    response = StreamingHttpResponse((chain([codecs.BOM_UTF8],
+                                            writer.writerow(['Nr magazynowy', 'Data przyjecia', 'Data faktury kupna', 'Nazwa produktu',
+                                                             'Rozmiar',  'CW', 'Sprzedawca', 'Nr faktury kupna', 'Nr zamowienia',
+                                                             'Email', 'Cena kupna', 'Komentarz']),
+                                            (writer.writerow([shoe.storage_nr, shoe.entry_date, shoe.buy_invoice_date, shoe.name,
+                                                              shoe.size, shoe.cw, shoe.seller, shoe.buy_invoice_nr, shoe.order_nr,
+                                                              shoe.email, shoe.buy_price, shoe.comment]) for shoe in in_storage_shoes.iterator(chunk_size=25)))),
+                                     content_type='text/csv',)
+
+    response['Content-Disposition'] = f'attachment; filename="MAGAZYN_{datetime.now()}.csv"'
 
     return response
 
 
-@login_required(login_url='/login/')
+@ login_required(login_url='/login/')
 def archives_csv(request):
-    response = HttpResponse(
-        content_type='text/csv',
-        headers={
-            'Content-Disposition': f'attachment; filename="ARCHIWUM_{datetime.now()}.csv"'},
-    )
-
-    response.write(u'\ufeff'.encode('utf8'))
-
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['Nr magazynowy', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'CW', 'Nr zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
-                     'Data przyjecia', 'Nr faktury kupna', 'Data faktury kupna',
-                     'Data wydania', 'Nr faktury sprzedazy', 'Data faktury sprzedazy',
-                     'Data wpływu na konto', 'Cena sprzedazy', 'Kupujący',
-                     'Numer listu przewozowego', 'Nr StockX'])
-
     sold_shoes = SoldShoe.objects.all()
 
     name = request.GET.get('n')
@@ -144,11 +133,6 @@ def archives_csv(request):
     if order_nr:
         sold_shoes = sold_shoes.filter(order_nr__contains=order_nr)
 
-    order_date = request.GET.get('od')
-    if order_date:
-        order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-        sold_shoes = sold_shoes.filter(order_date=order_date)
-
     entry_date = request.GET.get('ed')
     if entry_date:
         entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
@@ -159,32 +143,31 @@ def archives_csv(request):
         send_date = datetime.strptime(send_date, '%Y-%m-%d').date()
         sold_shoes = sold_shoes.filter(exit_date=send_date)
 
-    for shoe in sold_shoes:
-        writer.writerow([shoe.storage_nr, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment,
-                         shoe.entry_date, shoe.buy_invoice_nr, shoe.buy_invoice_date,
-                         shoe.exit_date, shoe.sell_invoice_nr, shoe.sell_invoice_date,
-                         shoe.money_income_date, shoe.sell_price, shoe.buyer,
-                         shoe.tracking_nr, shoe.stockx_nr])
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer, delimiter=';')
+
+    response = StreamingHttpResponse((chain([codecs.BOM_UTF8],
+                                            writer.writerow(['Nr magazynowy', 'Data przyjecia', 'Data wydania', 'Data faktury kupna',
+                                                             'Data faktury sprzedazy', 'Data wpływu na konto', 'Data faktury StockX',
+                                                             'Nazwa produktu', 'Rozmiar', 'CW', 'Nr StockX', 'Nr faktury sprzedazy',
+                                                             'Numer listu przewozowego', 'Sprzedawca', 'Nr faktury kupna', 'Nr zamowienia',
+                                                             'Email', 'Cena kupna', 'Cena sprzedazy', 'Cena Alias', 'Kupujący',
+                                                             'Komentarz', 'Kurs waluty']),
+                                            (writer.writerow([shoe.storage_nr, shoe.entry_date, shoe.exit_date, shoe.buy_invoice_date,
+                                                              shoe.sell_invoice_date, shoe.money_income_date, shoe.stockx_invoice_date,
+                                                              shoe.name, shoe.size, shoe.cw, shoe.stockx_nr, shoe.sell_invoice_nr,
+                                                              shoe.tracking_nr, shoe.seller, shoe.buy_invoice_nr, shoe.order_nr,
+                                                              shoe.email, shoe.buy_price, shoe.sell_price, shoe.eur_alias, shoe.buyer,
+                                                              shoe.comment, shoe.exchange_rate]) for shoe in sold_shoes.iterator(chunk_size=25)))),
+                                     content_type='text/csv',)
+
+    response['Content-Disposition'] = f'attachment; filename="ARCHIWUM_{datetime.now()}.csv"'
 
     return response
 
 
-@login_required(login_url='/login/')
+@ login_required(login_url='/login/')
 def missing_storage_csv(request):
-    response = HttpResponse(
-        content_type='text/csv',
-        headers={
-            'Content-Disposition': f'attachment; filename="NO_DATA_MAGAZYN_{datetime.now()}.csv"'},
-    )
-
-    response.write(u'\ufeff'.encode('utf8'))
-
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['Nr magazynowy', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'CW', 'Numer zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
-                     'Data przyjecia', 'Nr faktury kupna', 'Data faktury kupna'])
-
     missing_storage = InStorageShoe.objects.filter(
         Q(buy_invoice_nr__exact='') | Q(buy_invoice_date__isnull=True))
 
@@ -203,42 +186,30 @@ def missing_storage_csv(request):
         missing_storage = missing_storage.filter(
             order_nr__contains=order_nr)
 
-    order_date = request.GET.get('od')
-    if order_date:
-        order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-        missing_storage = missing_storage.filter(order_date=order_date)
-
     entry_date = request.GET.get('ed')
     if entry_date:
         entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
         missing_storage = missing_storage.filter(entry_date=entry_date)
 
-    for shoe in missing_storage:
-        writer.writerow([shoe.storage_nr, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment,
-                         shoe.entry_date, shoe.buy_invoice_nr, shoe.buy_invoice_date])
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer, delimiter=';')
+
+    response = StreamingHttpResponse((chain([codecs.BOM_UTF8],
+                                            writer.writerow(['Nr magazynowy', 'Data przyjecia', 'Data faktury kupna', 'Nazwa produktu',
+                                                             'Rozmiar',  'CW', 'Sprzedawca', 'Nr faktury kupna', 'Nr zamowienia',
+                                                             'Email', 'Cena kupna', 'Komentarz']),
+                                            (writer.writerow([shoe.storage_nr, shoe.entry_date, shoe.buy_invoice_date, shoe.name,
+                                                              shoe.size, shoe.cw, shoe.seller, shoe.buy_invoice_nr, shoe.order_nr,
+                                                              shoe.email, shoe.buy_price, shoe.comment]) for shoe in missing_storage.iterator(chunk_size=25)))),
+                                     content_type='text/csv',)
+
+    response['Content-Disposition'] = f'attachment; filename="NO_DATA_MAGAZYN_{datetime.now()}.csv"'
 
     return response
 
 
-@login_required(login_url='/login/')
+@ login_required(login_url='/login/')
 def missing_archives_csv(request):
-    response = HttpResponse(
-        content_type='text/csv',
-        headers={
-            'Content-Disposition': f'attachment; filename="NO_DATA_ARCHIWUM_{datetime.now()}.csv"'},
-    )
-
-    response.write(u'\ufeff'.encode('utf8'))
-
-    writer = csv.writer(response, delimiter=';')
-    writer.writerow(['Nr magazynowy', 'Email', 'Cena kupna', 'Nazwa produktu',
-                     'Rozmiar', 'CW', 'Numer zamowienia', 'Data zamowienia', 'Sprzedawca', 'Komentarz',
-                     'Data przyjecia', 'Nr faktury kupna', 'Data faktury kupna',
-                     'Data wydania', 'Nr faktury sprzedazy', 'Data faktury sprzedazy',
-                     'Data wpływu na konto', 'Cena sprzedazy', 'Kupujący',
-                     'Numer listu przewozowego', 'Nr StockX'])
-
     missing_archives = SoldShoe.objects.filter(
         Q(buy_invoice_nr__exact='') | Q(buy_invoice_date__isnull=True) |
         Q(sell_invoice_nr__exact='') | Q(sell_invoice_date__isnull=True) |
@@ -266,11 +237,6 @@ def missing_archives_csv(request):
         missing_archives = missing_archives.filter(
             order_nr__contains=order_nr)
 
-    order_date = request.GET.get('od')
-    if order_date:
-        order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-        missing_archives = missing_archives.filter(order_date=order_date)
-
     entry_date = request.GET.get('ed')
     if entry_date:
         entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
@@ -281,13 +247,25 @@ def missing_archives_csv(request):
         send_date = datetime.strptime(send_date, '%Y-%m-%d').date()
         missing_archives = missing_archives.filter(exit_date=send_date)
 
-    for shoe in missing_archives:
-        writer.writerow([shoe.storage_nr, shoe.email, shoe.buy_price, shoe.name,
-                         shoe.size, shoe.cw, shoe.order_nr, shoe.order_date, shoe.seller, shoe.comment,
-                         shoe.entry_date, shoe.buy_invoice_nr, shoe.buy_invoice_date,
-                         shoe.exit_date, shoe.sell_invoice_nr, shoe.sell_invoice_date,
-                         shoe.money_income_date, shoe.sell_price, shoe.buyer,
-                         shoe.tracking_nr, shoe.stockx_nr])
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer, delimiter=';')
+
+    response = StreamingHttpResponse((chain([codecs.BOM_UTF8],
+                                            writer.writerow(['Nr magazynowy', 'Data przyjecia', 'Data wydania', 'Data faktury kupna',
+                                                             'Data faktury sprzedazy', 'Data wpływu na konto', 'Data faktury StockX',
+                                                             'Nazwa produktu', 'Rozmiar', 'CW', 'Nr StockX', 'Nr faktury sprzedazy',
+                                                             'Numer listu przewozowego', 'Sprzedawca', 'Nr faktury kupna', 'Nr zamowienia',
+                                                             'Email', 'Cena kupna', 'Cena sprzedazy', 'Cena Alias', 'Kupujący',
+                                                             'Komentarz', 'Kurs waluty']),
+                                            (writer.writerow([shoe.storage_nr, shoe.entry_date, shoe.exit_date, shoe.buy_invoice_date,
+                                                              shoe.sell_invoice_date, shoe.money_income_date, shoe.stockx_invoice_date,
+                                                              shoe.name, shoe.size, shoe.cw, shoe.stockx_nr, shoe.sell_invoice_nr,
+                                                              shoe.tracking_nr, shoe.seller, shoe.buy_invoice_nr, shoe.order_nr,
+                                                              shoe.email, shoe.buy_price, shoe.sell_price, shoe.eur_alias, shoe.buyer,
+                                                              shoe.comment, shoe.exchange_rate]) for shoe in missing_archives.iterator(chunk_size=25)))),
+                                     content_type='text/csv',)
+
+    response['Content-Disposition'] = f'attachment; filename="NO_DATA_ARCHIWUM_{datetime.now()}.csv"'
 
     return response
 
@@ -363,18 +341,20 @@ class CreateIncommingCsv(LoginRequiredMixin, TemplateView):
             for nr, incomming in enumerate(incommings[1:]):
                 line = incomming.split(';')
 
-                if len(line) == 9:
+                if len(line) == 11:
                     try:
                         new_incomming = IncommingShoe.objects.create(
-                            email=line[0],
-                            buy_price=line[1],
+                            order_date=line[0],
+                            buy_invoice_date=line[1] if line[1] else None,
                             name=line[2],
                             size=line[3],
                             cw=line[4],
-                            order_nr=line[5],
-                            order_date=line[6],
-                            seller=Seller.objects.get(name=line[7]),
-                            comment=line[8],
+                            seller=Seller.objects.get(name=line[5]),
+                            buy_invoice_nr=line[6],
+                            order_nr=line[7],
+                            email=line[8],
+                            buy_price=line[9],
+                            comment=line[10],
                         )
 
                         added += 1
@@ -422,36 +402,36 @@ class CreatedIncommings(LoginRequiredMixin, TemplateView):
         return context
 
 
-class CheckIncomming(LoginRequiredMixin, TemplateView):
+class CheckIncomming(LoginRequiredMixin, ListView):
     template_name = 'base/check_incomming.html'
     login_url = '/login/'
+    paginate_by = 25
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['incommings'] = IncommingShoe.objects.all()
+    def get_queryset(self):
+        incommings = IncommingShoe.objects.all()
 
         name = self.request.GET.get('n')
         if name:
-            context['incommings'] = context['incommings'].filter(
+            incommings = incommings.filter(
                 name__contains=name)
 
         seller = self.request.GET.get('s')
         if seller:
-            context['incommings'] = context['incommings'].filter(
+            incommings = incommings.filter(
                 seller__name__contains=seller)
 
         order_nr = self.request.GET.get('on')
         if order_nr:
-            context['incommings'] = context['incommings'].filter(
+            incommings = incommings.filter(
                 order_nr__contains=order_nr)
 
         order_date = self.request.GET.get('od')
         if order_date:
             order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-            context['incommings'] = context['incommings'].filter(
+            incommings = incommings.filter(
                 order_date=order_date)
 
-        return context
+        return sorted(incommings, key=attrgetter('order_date'))
 
 
 class EntryIn(LoginRequiredMixin, TemplateView):
@@ -459,36 +439,36 @@ class EntryIn(LoginRequiredMixin, TemplateView):
     login_url = '/login/'
 
 
-class EntryInSingle(LoginRequiredMixin, TemplateView):
+class EntryInSingle(LoginRequiredMixin, ListView):
     template_name = 'base/entry_in_single.html'
     login_url = '/login/'
+    paginate_by = 25
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['incommings'] = IncommingShoe.objects.all()
+    def get_queryset(self):
+        incommings = IncommingShoe.objects.all()
 
         name = self.request.GET.get('n')
         if name:
-            context['incommings'] = context['incommings'].filter(
+            incommings = incommings.filter(
                 name__contains=name)
 
         seller = self.request.GET.get('s')
         if seller:
-            context['incommings'] = context['incommings'].filter(
+            incommings = incommings.filter(
                 seller__name__contains=seller)
 
         order_nr = self.request.GET.get('on')
         if order_nr:
-            context['incommings'] = context['incommings'].filter(
+            incommings = incommings.filter(
                 order_nr__contains=order_nr)
 
         order_date = self.request.GET.get('od')
         if order_date:
             order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-            context['incommings'] = context['incommings'].filter(
+            incommings = incommings.filter(
                 order_date=order_date)
 
-        return context
+        return sorted(incommings, key=attrgetter('order_date'))
 
 
 class CreateSingleEntryIn(LoginRequiredMixin, DetailView):
@@ -541,19 +521,17 @@ class CreateSingleEntryIn(LoginRequiredMixin, DetailView):
 
                 in_storage_shoe = InStorageShoe.objects.create(
                     storage_nr=form.cleaned_data['storage_nr'],
-
-                    email=incomming_shoe.email,
-                    buy_price=incomming_shoe.buy_price,
+                    entry_date=form.cleaned_data['entry_date'],
+                    buy_invoice_date=incomming_shoe.buy_invoice_date,
                     name=incomming_shoe.name,
                     size=incomming_shoe.size,
-                    order_date=incomming_shoe.order_date,
+                    cw=incomming_shoe.cw,
                     seller=incomming_shoe.seller,
+                    buy_invoice_nr=incomming_shoe.buy_invoice_nr,
+                    order_nr=incomming_shoe.order_nr,
+                    email=incomming_shoe.email,
+                    buy_price=incomming_shoe.buy_price,
                     comment=incomming_shoe.comment,
-
-                    entry_date=form.cleaned_data['entry_date'],
-                    buy_invoice_nr=form.cleaned_data['buy_invoice_nr'] if form.cleaned_data[
-                        'buy_invoice_nr'] is not None else "",
-                    buy_invoice_date=form.cleaned_data['buy_invoice_date'],
                 )
 
                 incomming_shoe.delete()
@@ -584,7 +562,9 @@ class EntryInCsv(LoginRequiredMixin, TemplateView):
 
         max_storage_nr_storage = InStorageShoe.objects.aggregate(
             Max('storage_nr'))
-        max_storage_nr_archives = SoldShoe.objects.aggregate(Max('storage_nr'))
+
+        max_storage_nr_archives = SoldShoe.objects.aggregate(
+            Max('storage_nr'))
 
         if max_storage_nr_storage['storage_nr__max'] and max_storage_nr_archives['storage_nr__max']:
             context['max_storage_nr'] = max(
@@ -612,18 +592,19 @@ class EntryInCsv(LoginRequiredMixin, TemplateView):
             for nr, entry_in in enumerate(entry_ins[1:]):
                 line = entry_in.split(';')
 
-                if len(line) == 13:
+                if len(line) == 12:
                     try:
                         incommings = IncommingShoe.objects.filter(
-                            email=line[1],
-                            buy_price=line[2],
+                            buy_invoice_date=line[2] if line[2] else None,
                             name=line[3],
                             size=line[4],
                             cw=line[5],
-                            order_nr=line[6],
-                            order_date=line[7],
-                            seller=Seller.objects.get(name=line[8]),
-                            comment=line[9],
+                            seller=Seller.objects.get(name=line[6]),
+                            buy_invoice_nr=line[7],
+                            order_nr=line[8],
+                            email=line[9],
+                            buy_price=line[10],
+                            comment=line[11],
                         )
 
                         if incommings:
@@ -631,20 +612,17 @@ class EntryInCsv(LoginRequiredMixin, TemplateView):
 
                             new_entry_in = InStorageShoe.objects.create(
                                 storage_nr=line[0],
-
-                                email=line[1],
-                                buy_price=line[2],
+                                entry_date=line[1],
+                                buy_invoice_date=line[2] if line[2] else None,
                                 name=line[3],
                                 size=line[4],
                                 cw=line[5],
-                                order_nr=line[6],
-                                order_date=line[7],
-                                seller=Seller.objects.get(name=line[8]),
-                                comment=line[9],
-
-                                entry_date=line[10],
-                                buy_invoice_nr=line[11],
-                                buy_invoice_date=line[12] if line[12] else None,
+                                seller=Seller.objects.get(name=line[6]),
+                                buy_invoice_nr=line[7],
+                                order_nr=line[8],
+                                email=line[9],
+                                buy_price=line[10],
+                                comment=line[11],
                             )
 
                             incomming.delete()
@@ -720,24 +698,21 @@ class AddToStorageCsv(LoginRequiredMixin, TemplateView):
             for nr, entry_in in enumerate(entry_ins[1:]):
                 line = entry_in.split(';')
 
-                if len(line) == 13:
+                if len(line) == 12:
                     try:
                         new_entry_in = InStorageShoe.objects.create(
                             storage_nr=line[0],
-
-                            email=line[1],
-                            buy_price=line[2],
+                            entry_date=line[1],
+                            buy_invoice_date=line[2] if line[2] else None,
                             name=line[3],
                             size=line[4],
                             cw=line[5],
-                            order_nr=line[6],
-                            order_date=line[7],
-                            seller=Seller.objects.get(name=line[8]),
-                            comment=line[9],
-
-                            entry_date=line[10],
-                            buy_invoice_nr=line[11],
-                            buy_invoice_date=line[12] if line[12] else None,
+                            seller=Seller.objects.get(name=line[6]),
+                            buy_invoice_nr=line[7],
+                            order_nr=line[8],
+                            email=line[9],
+                            buy_price=line[10],
+                            comment=line[11],
                         )
 
                         added += 1
@@ -785,42 +760,36 @@ class CreatedEntryIns(LoginRequiredMixin, TemplateView):
         return context
 
 
-class CheckStorage(LoginRequiredMixin, TemplateView):
+class CheckStorage(LoginRequiredMixin, ListView):
     template_name = 'base/check_storage.html'
     login_url = '/login/'
+    paginate_by = 25
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['in_storage'] = InStorageShoe.objects.all()
+    def get_queryset(self):
+        in_storage = InStorageShoe.objects.all()
 
         name = self.request.GET.get('n')
         if name:
-            context['in_storage'] = context['in_storage'].filter(
+            in_storage = in_storage.filter(
                 name__contains=name)
 
         seller = self.request.GET.get('s')
         if seller:
-            context['in_storage'] = context['in_storage'].filter(
+            in_storage = in_storage.filter(
                 seller__name__contains=seller)
 
         order_nr = self.request.GET.get('on')
         if order_nr:
-            context['in_storage'] = context['in_storage'].filter(
+            in_storage = in_storage.filter(
                 order_nr__contains=order_nr)
-
-        order_date = self.request.GET.get('od')
-        if order_date:
-            order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-            context['in_storage'] = context['in_storage'].filter(
-                order_date=order_date)
 
         entry_date = self.request.GET.get('ed')
         if entry_date:
             entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
-            context['in_storage'] = context['in_storage'].filter(
+            in_storage = in_storage.filter(
                 entry_date=entry_date)
 
-        return context
+        return sorted(in_storage, key=lambda x: x.storage_nr if x.storage_nr else 0)
 
 
 class Send(LoginRequiredMixin, TemplateView):
@@ -828,42 +797,36 @@ class Send(LoginRequiredMixin, TemplateView):
     login_url = '/login/'
 
 
-class SendSingle(LoginRequiredMixin, TemplateView):
+class SendSingle(LoginRequiredMixin, ListView):
     template_name = 'base/send_single.html'
     login_url = '/login/'
+    paginate_by = 25
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['in_storage'] = InStorageShoe.objects.all()
+    def get_queryset(self, **kwargs):
+        in_storage = InStorageShoe.objects.all()
 
         name = self.request.GET.get('n')
         if name:
-            context['in_storage'] = context['in_storage'].filter(
+            in_storage = in_storage.filter(
                 name__contains=name)
 
         seller = self.request.GET.get('s')
         if seller:
-            context['in_storage'] = context['in_storage'].filter(
+            in_storage = in_storage.filter(
                 seller__name__contains=seller)
 
         order_nr = self.request.GET.get('on')
         if order_nr:
-            context['in_storage'] = context['in_storage'].filter(
+            in_storage = in_storage.filter(
                 order_nr__contains=order_nr)
-
-        order_date = self.request.GET.get('od')
-        if order_date:
-            order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-            context['in_storage'] = context['in_storage'].filter(
-                order_date=order_date)
 
         entry_date = self.request.GET.get('ed')
         if entry_date:
             entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
-            context['in_storage'] = context['in_storage'].filter(
+            in_storage = in_storage.filter(
                 entry_date=entry_date)
 
-        return context
+        return sorted(in_storage, key=lambda x: x.storage_nr if x.storage_nr else 0)
 
 
 class CreateSingleSend(LoginRequiredMixin, DetailView):
@@ -888,30 +851,29 @@ class CreateSingleSend(LoginRequiredMixin, DetailView):
 
                 sold_shoe = SoldShoe.objects.create(
                     storage_nr=in_storage_shoe.storage_nr,
-
-                    email=in_storage_shoe.email,
-                    buy_price=in_storage_shoe.buy_price,
+                    entry_date=in_storage_shoe.entry_date,
+                    exit_date=form.cleaned_data['exit_date'],
+                    buy_invoice_date=in_storage_shoe.buy_invoice_date,
+                    sell_invoice_date=form.cleaned_data['sell_invoice_date'],
+                    money_income_date=form.cleaned_data['money_income_date'],
+                    stockx_invoice_date=form.cleaned_data['stockx_invoice_date'],
                     name=in_storage_shoe.name,
                     size=in_storage_shoe.size,
                     cw=in_storage_shoe.cw,
-                    order_nr=in_storage_shoe.order_nr,
-                    order_date=in_storage_shoe.order_date,
-                    seller=in_storage_shoe.seller,
-                    comment=in_storage_shoe.comment,
-
-                    entry_date=in_storage_shoe.entry_date,
-                    buy_invoice_nr=in_storage_shoe.buy_invoice_nr,
-                    buy_invoice_date=in_storage_shoe.buy_invoice_date,
-
-                    exit_date=form.cleaned_data['exit_date'],
+                    stockx_nr=form.cleaned_data['stockx_nr'] if form.cleaned_data['stockx_nr'] is not None else "",
                     sell_invoice_nr=form.cleaned_data['sell_invoice_nr'] if form.cleaned_data[
                         'sell_invoice_nr'] is not None else "",
-                    sell_invoice_date=form.cleaned_data['sell_invoice_date'],
-                    money_income_date=form.cleaned_data['money_income_date'],
-                    sell_price=form.cleaned_data['sell_price'] if form.cleaned_data['sell_price'] is not None else 0,
-                    buyer=form.cleaned_data['buyer'],
                     tracking_nr=form.cleaned_data['tracking_nr'] if form.cleaned_data['tracking_nr'] is not None else "",
-                    stockx_nr=form.cleaned_data['stockx_nr'] if form.cleaned_data['stockx_nr'] is not None else "",
+                    seller=in_storage_shoe.seller,
+                    buy_invoice_nr=in_storage_shoe.buy_invoice_nr,
+                    order_nr=in_storage_shoe.order_nr,
+                    email=in_storage_shoe.email,
+                    buy_price=in_storage_shoe.buy_price,
+                    sell_price=form.cleaned_data['sell_price'] if form.cleaned_data['sell_price'] is not None else 0,
+                    eur_alias=form.cleaned_data['eur_alias'] if form.cleaned_data['eur_alias'] is not None else 0,
+                    buyer=form.cleaned_data['buyer'],
+                    comment=in_storage_shoe.comment,
+                    exchange_rate=form.cleaned_data['exchange_rate'] if form.cleaned_data['exchange_rate'] is not None else 0,
                 )
 
                 in_storage_shoe.delete()
@@ -955,58 +917,52 @@ class CreateSendCsv(LoginRequiredMixin, TemplateView):
             for nr, send in enumerate(sends[1:]):
                 line = send.split(';')
 
-                if len(line) == 21:
+                if len(line) == 23:
                     try:
                         in_storage = InStorageShoe.objects.get(
                             storage_nr=line[0],
-
-                            email=line[1],
-                            buy_price=line[2],
-                            name=line[3],
-                            size=line[4],
-                            cw=line[5],
-                            order_nr=line[6],
-                            order_date=line[7],
-                            seller=Seller.objects.get(name=line[8]),
-                            comment=line[9],
-
-                            entry_date=line[10],
-                            buy_invoice_nr=line[11],
-                            buy_invoice_date=line[12] if line[12] else None,
+                            entry_date=line[1],
+                            buy_invoice_date=line[3] if line[3] else None,
+                            name=line[7],
+                            size=line[8],
+                            cw=line[9],
+                            seller=Seller.objects.get(name=line[13]),
+                            buy_invoice_nr=line[14],
+                            order_nr=line[15],
+                            email=line[16],
+                            buy_price=line[17],
+                            comment=line[21],
                         )
 
                         if in_storage:
                             new_send = SoldShoe.objects.create(
                                 storage_nr=line[0],
-
-                                email=line[1],
-                                buy_price=line[2],
-                                name=line[3],
-                                size=line[4],
-                                cw=line[5],
-                                order_nr=line[6],
-                                order_date=line[7],
-                                seller=Seller.objects.get(name=line[8]),
-                                comment=line[9],
-
-                                entry_date=line[10],
-                                buy_invoice_nr=line[11],
-                                buy_invoice_date=line[12] if line[12] else None,
-
-                                exit_date=line[13] if line[13] else None,
-                                sell_invoice_nr=line[14],
-                                sell_invoice_date=line[15] if line[15] else None,
-                                money_income_date=line[16] if line[16] else None,
-                                sell_price=line[17] if line[17] else 0,
+                                entry_date=line[1],
+                                exit_date=line[2],
+                                buy_invoice_date=line[3] if line[3] else None,
+                                sell_invoice_date=line[4] if line[4] else None,
+                                money_income_date=line[5] if line[5] else None,
+                                stockx_invoice_date=line[6] if line[6] else None,
+                                name=line[7],
+                                size=line[8],
+                                cw=line[9] if line[9] else '',
+                                stockx_nr=line[10] if line[10] else '',
+                                sell_invoice_nr=line[11] if line[11] else '',
+                                tracking_nr=line[12] if line[12] else '',
+                                seller=Seller.objects.get(name=line[13]),
+                                buy_invoice_nr=line[14] if line[14] else '',
+                                order_nr=line[15] if line[15] else '',
+                                email=line[16],
+                                buy_price=line[17],
+                                sell_price=line[18] if line[18] else 0,
+                                eur_alias=line[19] if line[19] else 0,
                                 buyer=Buyer.objects.get(
-                                    name=line[18]) if line[18] else None,
-                                tracking_nr=line[19],
-                                stockx_nr=line[20],
+                                    name=line[20]) if line[20] else None,
+                                comment=line[21] if line[21] else '',
+                                exchange_rate=line[22] if line[22] else 0,
                             )
 
                             in_storage.delete()
-
-                            print('HERE')
 
                             added += 1
                             added_ids.append(new_send.id)
@@ -1066,34 +1022,33 @@ class AddToArchivesCsv(LoginRequiredMixin, TemplateView):
             for nr, send in enumerate(sends[1:]):
                 line = send.split(';')
 
-                if len(line) == 21:
+                if len(line) == 23:
                     try:
                         new_send = SoldShoe.objects.create(
                             storage_nr=line[0],
-
-                            email=line[1],
-                            buy_price=line[2],
-                            name=line[3],
-                            size=line[4],
-                            cw=line[5],
-                            order_nr=line[6],
-                            order_date=line[7],
-                            seller=Seller.objects.get(name=line[8]),
-                            comment=line[9],
-
-                            entry_date=line[10],
-                            buy_invoice_nr=line[11],
-                            buy_invoice_date=line[12] if line[12] else None,
-
-                            exit_date=line[13] if line[13] else None,
-                            sell_invoice_nr=line[14],
-                            sell_invoice_date=line[15] if line[15] else None,
-                            money_income_date=line[16] if line[16] else None,
-                            sell_price=line[17] if line[17] else 0,
+                            entry_date=line[1],
+                            exit_date=line[2] if line[2] else None,
+                            buy_invoice_date=line[3] if line[3] else None,
+                            sell_invoice_date=line[4] if line[4] else None,
+                            money_income_date=line[5] if line[5] else None,
+                            stockx_invoice_date=line[6] if line[6] else None,
+                            name=line[7],
+                            size=line[8],
+                            cw=line[9],
+                            stockx_nr=line[10],
+                            sell_invoice_nr=line[11],
+                            tracking_nr=line[12],
+                            seller=Seller.objects.get(name=line[13]),
+                            buy_invoice_nr=line[14],
+                            order_nr=line[15],
+                            email=line[16],
+                            buy_price=line[17],
+                            sell_price=line[18] if line[18] else 0,
+                            eur_alias=line[19] if line[19] else 0,
                             buyer=Buyer.objects.get(
-                                name=line[18]) if line[18] else None,
-                            tracking_nr=line[19],
-                            stockx_nr=line[20],
+                                name=line[20]) if line[20] else None,
+                            comment=line[21],
+                            exchange_rate=line[22],
                         )
 
                         added += 1
@@ -1141,72 +1096,47 @@ class CreatedSends(LoginRequiredMixin, TemplateView):
         return context
 
 
-class Archives(LoginRequiredMixin, TemplateView):
+class Archives(LoginRequiredMixin, ListView):
     template_name = 'base/archives.html'
     login_url = '/login/'
+    paginate_by = 25
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['sold_shoes'] = SoldShoe.objects.all()
+    def get_queryset(self):
+        sold_shoes = SoldShoe.objects.all()
 
         name = self.request.GET.get('n')
         if name:
-            context['sold_shoes'] = context['sold_shoes'].filter(
+            sold_shoes = sold_shoes.filter(
                 name__contains=name)
 
         seller = self.request.GET.get('s')
         if seller:
-            context['sold_shoes'] = context['sold_shoes'].filter(
+            sold_shoes = sold_shoes.filter(
                 seller__name__contains=seller)
 
         buyer = self.request.GET.get('b')
         if buyer:
-            context['sold_shoes'] = context['sold_shoes'].filter(
+            sold_shoes = sold_shoes.filter(
                 buyer__name__contains=buyer)
 
         order_nr = self.request.GET.get('on')
         if order_nr:
-            context['sold_shoes'] = context['sold_shoes'].filter(
+            sold_shoes = sold_shoes.filter(
                 order_nr__contains=order_nr)
-
-        order_date = self.request.GET.get('od')
-        if order_date:
-            order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-            context['sold_shoes'] = context['sold_shoes'].filter(
-                order_date=order_date)
 
         entry_date = self.request.GET.get('ed')
         if entry_date:
             entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
-            context['sold_shoes'] = context['sold_shoes'].filter(
+            sold_shoes = sold_shoes.filter(
                 entry_date=entry_date)
 
         send_date = self.request.GET.get('sd')
         if send_date:
             send_date = datetime.strptime(send_date, '%Y-%m-%d').date()
-            context['sold_shoes'] = context['sold_shoes'].filter(
+            sold_shoes = sold_shoes.filter(
                 exit_date=send_date)
 
-        return context
-
-
-class CheckMissingData(LoginRequiredMixin, TemplateView):
-    template_name = 'base/check_missing_data.html'
-    login_url = '/login/'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['missing_data_archives'] = SoldShoe.objects.filter(
-            Q(buy_invoice_nr__exact='') | Q(buy_invoice_date__isnull=True) |
-            Q(sell_invoice_nr__exact='') | Q(sell_invoice_date__isnull=True) |
-            Q(money_income_date__isnull=True) | Q(sell_price__isnull=True) |
-            Q(buyer__isnull=True) | Q(tracking_nr__exact='') |
-            Q(stockx_nr__exact='') | Q(cw__exact=''))
-
-        context['missing_data_storage'] = InStorageShoe.objects.filter(
-            Q(buy_invoice_nr__exact='') | Q(buy_invoice_date__isnull=True))
-
-        return context
+        return sorted(sold_shoes, key=lambda x: x.storage_nr if x.storage_nr else 0)
 
 
 class InputMissingData(LoginRequiredMixin, TemplateView):
@@ -1214,13 +1144,13 @@ class InputMissingData(LoginRequiredMixin, TemplateView):
     login_url = '/login/'
 
 
-class InputMissingArchives(LoginRequiredMixin, TemplateView):
+class InputMissingArchives(LoginRequiredMixin, ListView):
     template_name = 'base/input_missing_archives.html'
     login_url = '/login/'
+    paginate_by = 25
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['missing_data_archives'] = SoldShoe.objects.filter(
+    def get_queryset(self):
+        missing_data_archives = SoldShoe.objects.filter(
             Q(buy_invoice_nr__exact='') | Q(buy_invoice_date__isnull=True) |
             Q(sell_invoice_nr__exact='') | Q(sell_invoice_date__isnull=True) |
             Q(money_income_date__isnull=True) | Q(sell_price__isnull=True) |
@@ -1229,83 +1159,70 @@ class InputMissingArchives(LoginRequiredMixin, TemplateView):
 
         name = self.request.GET.get('n')
         if name:
-            context['missing_data_archives'] = context['missing_data_archives'].filter(
+            missing_data_archives = missing_data_archives.filter(
                 name__contains=name)
 
         seller = self.request.GET.get('s')
         if seller:
-            context['missing_data_archives'] = context['missing_data_archives'].filter(
+            missing_data_archives = missing_data_archives.filter(
                 seller__name__contains=seller)
 
         buyer = self.request.GET.get('b')
         if buyer:
-            context['missing_data_archives'] = context['missing_data_archives'].filter(
+            missing_data_archives = missing_data_archives.filter(
                 buyer__name__contains=buyer)
 
         order_nr = self.request.GET.get('on')
         if order_nr:
-            context['missing_data_archives'] = context['missing_data_archives'].filter(
+            missing_data_archives = missing_data_archives.filter(
                 order_nr__contains=order_nr)
-
-        order_date = self.request.GET.get('od')
-        if order_date:
-            order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-            context['missing_data_archives'] = context['missing_data_archives'].filter(
-                order_date=order_date)
 
         entry_date = self.request.GET.get('ed')
         if entry_date:
             entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
-            context['missing_data_archives'] = context['missing_data_archives'].filter(
+            missing_data_archives = missing_data_archives.filter(
                 entry_date=entry_date)
 
         send_date = self.request.GET.get('sd')
         if send_date:
             send_date = datetime.strptime(send_date, '%Y-%m-%d').date()
-            context['missing_data_archives'] = context['missing_data_archives'].filter(
+            missing_data_archives = missing_data_archives.filter(
                 exit_date=send_date)
 
-        return context
+        return sorted(missing_data_archives, key=lambda x: x.storage_nr if x.storage_nr else 0)
 
 
-class InputMissingStorage(LoginRequiredMixin, TemplateView):
+class InputMissingStorage(LoginRequiredMixin, ListView):
     template_name = 'base/input_missing_storage.html'
     login_url = '/login/'
+    paginate_by = 25
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context['missing_data_storage'] = InStorageShoe.objects.filter(
+    def get_queryset(self):
+        missing_data_storage = InStorageShoe.objects.filter(
             Q(buy_invoice_nr__exact='') | Q(buy_invoice_date__isnull=True))
 
         name = self.request.GET.get('n')
         if name:
-            context['missing_data_storage'] = context['missing_data_storage'].filter(
+            missing_data_storage = missing_data_storage.filter(
                 name__contains=name)
 
         seller = self.request.GET.get('s')
         if seller:
-            context['missing_data_storage'] = context['missing_data_storage'].filter(
+            missing_data_storage = missing_data_storage.filter(
                 seller__name__contains=seller)
 
         order_nr = self.request.GET.get('on')
         if order_nr:
-            context['missing_data_storage'] = context['missing_data_storage'].filter(
+            missing_data_storage = missing_data_storage.filter(
                 order_nr__contains=order_nr)
-
-        order_date = self.request.GET.get('od')
-        if order_date:
-            order_date = datetime.strptime(order_date, '%Y-%m-%d').date()
-            context['missing_data_storage'] = context['missing_data_storage'].filter(
-                order_date=order_date)
 
         entry_date = self.request.GET.get('ed')
         if entry_date:
             entry_date = datetime.strptime(entry_date, '%Y-%m-%d').date()
-            context['missing_data_storage'] = context['missing_data_storage'].filter(
+            missing_data_storage = missing_data_storage.filter(
                 entry_date=entry_date)
 
-        return context
+        return sorted(missing_data_storage, key=lambda x: x.storage_nr if x.storage_nr else 0)
 
 
 class InputDataArchives(LoginRequiredMixin, DetailView):
@@ -1330,28 +1247,28 @@ class InputDataArchives(LoginRequiredMixin, DetailView):
         if form.is_valid():
             sold_shoe = SoldShoe.objects.get(id=self.get_object().pk)
             if sold_shoe:
-                sold_shoe.email = form.cleaned_data['email']
-                sold_shoe.buy_price = form.cleaned_data['buy_price']
+                sold_shoe.entry_date = form.cleaned_data['entry_date']
+                sold_shoe.exit_date = form.cleaned_data['exit_date']
+                sold_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
+                sold_shoe.sell_invoice_date = form.cleaned_data['sell_invoice_date']
+                sold_shoe.money_income_date = form.cleaned_data['money_income_date']
+                sold_shoe.stockx_invoice_date = form.cleaned_data['stockx_invoice_date']
                 sold_shoe.name = form.cleaned_data['name']
                 sold_shoe.size = form.cleaned_data['size']
                 sold_shoe.cw = form.cleaned_data['cw']
-                sold_shoe.order_nr = form.cleaned_data['order_nr']
-                sold_shoe.order_date = form.cleaned_data['order_date']
-                sold_shoe.seller = form.cleaned_data['seller']
-                sold_shoe.comment = form.cleaned_data['comment']
-
-                sold_shoe.entry_date = form.cleaned_data['entry_date']
-                sold_shoe.buy_invoice_nr = form.cleaned_data['buy_invoice_nr']
-                sold_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
-
-                sold_shoe.exit_date = form.cleaned_data['exit_date']
-                sold_shoe.sell_invoice_nr = form.cleaned_data['sell_invoice_nr']
-                sold_shoe.sell_invoice_date = form.cleaned_data['sell_invoice_date']
-                sold_shoe.money_income_date = form.cleaned_data['money_income_date']
-                sold_shoe.sell_price = form.cleaned_data['sell_price']
-                sold_shoe.buyer = form.cleaned_data['buyer']
-                sold_shoe.tracking_nr = form.cleaned_data['tracking_nr']
                 sold_shoe.stockx_nr = form.cleaned_data['stockx_nr']
+                sold_shoe.sell_invoice_nr = form.cleaned_data['sell_invoice_nr']
+                sold_shoe.tracking_nr = form.cleaned_data['tracking_nr']
+                sold_shoe.seller = form.cleaned_data['seller']
+                sold_shoe.buy_invoice_nr = form.cleaned_data['buy_invoice_nr']
+                sold_shoe.order_nr = form.cleaned_data['order_nr']
+                sold_shoe.email = form.cleaned_data['email']
+                sold_shoe.buy_price = form.cleaned_data['buy_price']
+                sold_shoe.sell_price = form.cleaned_data['sell_price']
+                sold_shoe.eur_alias = form.cleaned_data['eur_alias']
+                sold_shoe.buyer = form.cleaned_data['buyer']
+                sold_shoe.comment = form.cleaned_data['comment']
+                sold_shoe.exchange_rate = form.cleaned_data['exchange_rate']
 
                 sold_shoe.save()
 
@@ -1388,19 +1305,17 @@ class InputDataStorage(LoginRequiredMixin, DetailView):
                 id=self.get_object().pk)
 
             if in_storage_shoe:
-                in_storage_shoe.email = form.cleaned_data['email']
-                in_storage_shoe.buy_price = form.cleaned_data['buy_price']
+                in_storage_shoe.entry_date = form.cleaned_data['entry_date']
+                in_storage_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
                 in_storage_shoe.name = form.cleaned_data['name']
                 in_storage_shoe.size = form.cleaned_data['size']
                 in_storage_shoe.cw = form.cleaned_data['cw']
-                in_storage_shoe.order_nr = form.cleaned_data['order_nr']
-                in_storage_shoe.order_date = form.cleaned_data['order_date']
                 in_storage_shoe.seller = form.cleaned_data['seller']
-                in_storage_shoe.comment = form.cleaned_data['comment']
-
-                in_storage_shoe.entry_date = form.cleaned_data['entry_date']
                 in_storage_shoe.buy_invoice_nr = form.cleaned_data['buy_invoice_nr']
-                in_storage_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
+                in_storage_shoe.order_nr = form.cleaned_data['order_nr']
+                in_storage_shoe.email = form.cleaned_data['email']
+                in_storage_shoe.buy_price = form.cleaned_data['buy_price']
+                in_storage_shoe.comment = form.cleaned_data['comment']
 
                 in_storage_shoe.save()
 
@@ -1435,14 +1350,16 @@ class EditIncomming(LoginRequiredMixin, DetailView):
         if form.is_valid():
             incomming_shoe = IncommingShoe.objects.get(id=self.get_object().pk)
             if incomming_shoe:
-                incomming_shoe.email = form.cleaned_data['email']
-                incomming_shoe.buy_price = form.cleaned_data['buy_price']
+                incomming_shoe.order_date = form.cleaned_data['order_date']
+                incomming_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
                 incomming_shoe.name = form.cleaned_data['name']
                 incomming_shoe.size = form.cleaned_data['size']
                 incomming_shoe.cw = form.cleaned_data['cw']
-                incomming_shoe.order_nr = form.cleaned_data['order_nr']
-                incomming_shoe.order_date = form.cleaned_data['order_date']
                 incomming_shoe.seller = form.cleaned_data['seller']
+                incomming_shoe.buy_invoice_nr = form.cleaned_data['buy_invoice_nr']
+                incomming_shoe.order_nr = form.cleaned_data['order_nr']
+                incomming_shoe.email = form.cleaned_data['email']
+                incomming_shoe.buy_price = form.cleaned_data['buy_price']
                 incomming_shoe.comment = form.cleaned_data['comment']
 
                 incomming_shoe.save()
@@ -1505,19 +1422,17 @@ class EditStorage(LoginRequiredMixin, DetailView):
                 id=self.get_object().pk)
 
             if in_storage_shoe:
-                in_storage_shoe.email = form.cleaned_data['email']
-                in_storage_shoe.buy_price = form.cleaned_data['buy_price']
+                in_storage_shoe.entry_date = form.cleaned_data['entry_date']
+                in_storage_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
                 in_storage_shoe.name = form.cleaned_data['name']
                 in_storage_shoe.size = form.cleaned_data['size']
                 in_storage_shoe.cw = form.cleaned_data['cw']
-                in_storage_shoe.order_nr = form.cleaned_data['order_nr']
-                in_storage_shoe.order_date = form.cleaned_data['order_date']
                 in_storage_shoe.seller = form.cleaned_data['seller']
-                in_storage_shoe.comment = form.cleaned_data['comment']
-
-                in_storage_shoe.entry_date = form.cleaned_data['entry_date']
                 in_storage_shoe.buy_invoice_nr = form.cleaned_data['buy_invoice_nr']
-                in_storage_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
+                in_storage_shoe.order_nr = form.cleaned_data['order_nr']
+                in_storage_shoe.email = form.cleaned_data['email']
+                in_storage_shoe.buy_price = form.cleaned_data['buy_price']
+                in_storage_shoe.comment = form.cleaned_data['comment']
 
                 in_storage_shoe.save()
 
@@ -1583,28 +1498,28 @@ class EditArchives(LoginRequiredMixin, DetailView):
         if form.is_valid():
             sold_shoe = SoldShoe.objects.get(id=self.get_object().pk)
             if sold_shoe:
-                sold_shoe.email = form.cleaned_data['email']
-                sold_shoe.buy_price = form.cleaned_data['buy_price']
+                sold_shoe.entry_date = form.cleaned_data['entry_date']
+                sold_shoe.exit_date = form.cleaned_data['exit_date']
+                sold_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
+                sold_shoe.sell_invoice_date = form.cleaned_data['sell_invoice_date']
+                sold_shoe.money_income_date = form.cleaned_data['money_income_date']
+                sold_shoe.stockx_invoice_date = form.cleaned_data['stockx_invoice_date']
                 sold_shoe.name = form.cleaned_data['name']
                 sold_shoe.size = form.cleaned_data['size']
                 sold_shoe.cw = form.cleaned_data['cw']
-                sold_shoe.order_nr = form.cleaned_data['order_nr']
-                sold_shoe.order_date = form.cleaned_data['order_date']
-                sold_shoe.seller = form.cleaned_data['seller']
-                sold_shoe.comment = form.cleaned_data['comment']
-
-                sold_shoe.entry_date = form.cleaned_data['entry_date']
-                sold_shoe.buy_invoice_nr = form.cleaned_data['buy_invoice_nr']
-                sold_shoe.buy_invoice_date = form.cleaned_data['buy_invoice_date']
-
-                sold_shoe.exit_date = form.cleaned_data['exit_date']
-                sold_shoe.sell_invoice_nr = form.cleaned_data['sell_invoice_nr']
-                sold_shoe.sell_invoice_date = form.cleaned_data['sell_invoice_date']
-                sold_shoe.money_income_date = form.cleaned_data['money_income_date']
-                sold_shoe.sell_price = form.cleaned_data['sell_price']
-                sold_shoe.buyer = form.cleaned_data['buyer']
-                sold_shoe.tracking_nr = form.cleaned_data['tracking_nr']
                 sold_shoe.stockx_nr = form.cleaned_data['stockx_nr']
+                sold_shoe.sell_invoice_nr = form.cleaned_data['sell_invoice_nr']
+                sold_shoe.tracking_nr = form.cleaned_data['tracking_nr']
+                sold_shoe.seller = form.cleaned_data['seller']
+                sold_shoe.buy_invoice_nr = form.cleaned_data['buy_invoice_nr']
+                sold_shoe.order_nr = form.cleaned_data['order_nr']
+                sold_shoe.email = form.cleaned_data['email']
+                sold_shoe.buy_price = form.cleaned_data['buy_price']
+                sold_shoe.sell_price = form.cleaned_data['sell_price']
+                sold_shoe.eur_alias = form.cleaned_data['eur_alias']
+                sold_shoe.buyer = form.cleaned_data['buyer']
+                sold_shoe.comment = form.cleaned_data['comment']
+                sold_shoe.exchange_rate = form.cleaned_data['exchange_rate']
 
                 sold_shoe.save()
 
@@ -1836,6 +1751,232 @@ class EditBuyer(LoginRequiredMixin, DetailView):
         return redirect('edit-buyer', pk=self.get_object().pk)
 
 
+class PutOnAuction(LoginRequiredMixin, TemplateView):
+    template_name = 'base/put_on_auction.html'
+    login_url = '/login/'
+
+
+# TODO: filters
+class PutOnAuctionMultiple(LoginRequiredMixin, TemplateView):
+    template_name = 'base/put_on_auction_multiple.html'
+    login_url = '/login/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        obj_on_page = 25
+
+        in_storage_shoes = InStorageShoe.objects.all()
+
+        name = self.request.GET.get('n')
+        if name:
+            in_storage_shoes = in_storage_shoes.filter(
+                name__contains=name)
+
+        storage_nr = self.request.GET.get('s')
+        if storage_nr and storage_nr.isnumeric():
+            in_storage_shoes = in_storage_shoes.filter(
+                storage_nr=storage_nr)
+
+        in_storage_shoes = in_storage_shoes.filter(
+            ~Q(id__in=[shoe.in_storage_shoe.id for shoe in OnAuctionShoe.objects.all()])).order_by('storage_nr')
+
+        paginator = Paginator(in_storage_shoes, obj_on_page)
+
+        page_number = int(self.request.GET.get(
+            'page')) if self.request.GET.get('page') else 1
+        page_obj = paginator.page(page_number)
+
+        context['page_obj'] = page_obj
+
+        MyFormSet = formset_factory(form=OnAuctionForm, extra=0)
+
+        context['formset'] = MyFormSet(initial=[
+                                       {'in_storage_shoe': in_storage_shoe} for in_storage_shoe in page_obj])
+
+        for nr, form in enumerate(context['formset']):
+            form.fields['in_storage_shoe'].queryset = in_storage_shoes[(
+                page_number-1)*obj_on_page+nr: (page_number-1)*obj_on_page+nr+1]
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        OnAuctionFormSet = formset_factory(form=OnAuctionForm, extra=0)
+        formset = OnAuctionFormSet(request.POST)
+
+        on_auction = []
+
+        for form in formset:
+            if form.is_valid():
+                instance = form.save()
+
+                on_auction.append(instance.id)
+            else:
+                continue
+
+        query = '?'
+        for on_auction_id in on_auction:
+            query = query + 'on=' + str(on_auction_id) + '&'
+
+        query = query[:-1]
+
+        return redirect(reverse('send-on-auction') + query)
+
+
+class CheckOnAuction(LoginRequiredMixin, TemplateView):
+    template_name = 'base/check_on_auction.html'
+    login_url = '/login/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        obj_on_page = 25
+
+        in_storage_shoes = InStorageShoe.objects.all()
+        on_auction_shoes = OnAuctionShoe.objects.all()
+
+        name = self.request.GET.get('n')
+        if name:
+            in_storage_shoes = in_storage_shoes.filter(
+                name__contains=name)
+            on_auction_shoes = on_auction_shoes.filter(
+                in_storage_shoe__name__contains=name)
+
+        storage_nr = self.request.GET.get('s')
+        if storage_nr and storage_nr.isnumeric():
+            in_storage_shoes = in_storage_shoes.filter(
+                storage_nr=storage_nr)
+            on_auction_shoes = on_auction_shoes.filter(
+                in_storage_shoe__storage_nr=storage_nr)
+
+        in_storage_shoes = in_storage_shoes.filter(
+            Q(id__in=[shoe.in_storage_shoe.id for shoe in OnAuctionShoe.objects.all()])).order_by('storage_nr')
+
+        on_auction_shoes = on_auction_shoes.order_by(
+            'in_storage_shoe__storage_nr')
+
+        paginator = Paginator(on_auction_shoes, obj_on_page)
+
+        page_number = int(self.request.GET.get(
+            'page')) if self.request.GET.get('page') else 1
+        page_obj = paginator.page(page_number)
+
+        context['page_obj'] = page_obj
+
+        MyFormSet = formset_factory(form=OnAuctionForm, extra=0)
+
+        context['formset'] = MyFormSet(initial=[
+                                       {'in_storage_shoe': on_auction_shoe.in_storage_shoe, 'alias_price': on_auction_shoe.alias_price,
+                                        'stockx_price': on_auction_shoe.stockx_price, 'wtn_price': on_auction_shoe.wtn_price} for on_auction_shoe in page_obj])
+
+        for nr, form in enumerate(context['formset']):
+            form.fields['in_storage_shoe'].queryset = in_storage_shoes[(
+                page_number-1)*obj_on_page+nr: (page_number-1)*obj_on_page+nr+1]
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        OnAuctionFormSet = formset_factory(form=OnAuctionForm, extra=0)
+        formset = OnAuctionFormSet(request.POST)
+
+        edited = []
+        deleted = []
+
+        for nr, form in enumerate(formset):
+            in_storage_form_field = f'form-{nr}-in_storage_shoe'
+            alias_price_form_field = f'form-{nr}-alias_price'
+            stockx_price_form_field = f'form-{nr}-stockx_price'
+            wtn_price_form_field = f'form-{nr}-wtn_price'
+
+            try:
+                on_auction_shoe = OnAuctionShoe.objects.get(
+                    in_storage_shoe__id=formset.data[in_storage_form_field])
+
+                alias_price = str(on_auction_shoe.alias_price or '')
+                stockx_price = str(on_auction_shoe.stockx_price or '')
+                wtn_price = str(on_auction_shoe.wtn_price or '')
+
+                if formset.data[alias_price_form_field] == alias_price and \
+                        formset.data[stockx_price_form_field] == stockx_price and \
+                        formset.data[wtn_price_form_field] == wtn_price:
+                    continue
+
+                if formset.data[alias_price_form_field]:
+                    on_auction_shoe.alias_price = float(
+                        formset.data[alias_price_form_field])
+                elif not formset.data[alias_price_form_field] and on_auction_shoe.alias_price:
+                    on_auction_shoe.alias_price = None
+
+                if formset.data[stockx_price_form_field]:
+                    on_auction_shoe.stockx_price = float(
+                        formset.data[stockx_price_form_field])
+                elif not formset.data[stockx_price_form_field] and on_auction_shoe.stockx_price:
+                    on_auction_shoe.stockx_price = None
+
+                if formset.data[wtn_price_form_field]:
+                    on_auction_shoe.wtn_price = float(
+                        formset.data[wtn_price_form_field])
+                elif not formset.data[wtn_price_form_field] and on_auction_shoe.wtn_price:
+                    on_auction_shoe.wtn_price = None
+
+                if on_auction_shoe.alias_price or on_auction_shoe.stockx_price or on_auction_shoe.wtn_price:
+                    on_auction_shoe.save()
+                    edited.append(on_auction_shoe.id)
+                else:
+                    deleted.append(on_auction_shoe.in_storage_shoe.id)
+                    on_auction_shoe.delete()
+
+            except:
+                continue
+
+        query = '?'
+        for on_auction_id in edited:
+            query = query + 'ed=' + str(on_auction_id) + '&'
+
+        for in_storage_id in deleted:
+            query = query + 'del=' + str(in_storage_id) + '&'
+
+        query = query[:-1]
+
+        return redirect(reverse('edited-on-auction') + query)
+
+
+class SendOnAuction(LoginRequiredMixin, TemplateView):
+    template_name = 'base/send_on_auction.html'
+    login_url = '/login/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['edit'] = False
+
+        send_ids = self.request.GET.getlist('on')
+        context['send_on_auction'] = OnAuctionShoe.objects.filter(
+            id__in=send_ids)
+
+        return context
+
+
+class EditedOnAuction(LoginRequiredMixin, TemplateView):
+    template_name = 'base/send_on_auction.html'
+    login_url = '/login/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['edit'] = True
+
+        send_ids = self.request.GET.getlist('ed')
+        context['send_on_auction'] = OnAuctionShoe.objects.filter(
+            id__in=send_ids)
+
+        deleted_ids = self.request.GET.getlist('del')
+        context['removed_from_auction'] = InStorageShoe.objects.filter(
+            id__in=deleted_ids)
+
+        return context
+
+
 class Stats(LoginRequiredMixin, TemplateView):
     template_name = 'base/stats.html'
     login_url = '/login/'
@@ -1857,10 +1998,10 @@ class Stats(LoginRequiredMixin, TemplateView):
             order_date__month=month, order_date__year=year)
 
         in_storage_this_month = InStorageShoe.objects.filter(
-            order_date__month=month, order_date__year=year)
+            buy_invoice_date__month=month, buy_invoice_date__year=year)
 
         archives_this_month = SoldShoe.objects.filter(
-            order_date__month=month, order_date__year=year)
+            buy_invoice_date__month=month, buy_invoice_date__year=year)
 
         context['bought_count'] = len(
             incomming_this_month) + len(in_storage_this_month) + len(archives_this_month)
@@ -1891,18 +2032,28 @@ class Stats(LoginRequiredMixin, TemplateView):
 
         # INCOME COSTS last year
         last_year = dict(zip([f'{date.month}.{date.year}' for date in last_12_months], [
-                         {'income': 0, 'costs': 0, 'profit': 0} for _ in range(12)]))
+            {'income': 0, 'costs': 0, 'profit': 0, 'returned_tax': 0} for _ in range(12)]))
 
         incomming_last_year = IncommingShoe.objects.filter(
             order_date__gte=year_ago)
         in_storage_last_year = InStorageShoe.objects.filter(
-            order_date__gte=year_ago)
+            buy_invoice_date__gte=year_ago)
         sold_last_year = SoldShoe.objects.filter(
-            order_date__gte=year_ago)
+            buy_invoice_date__gte=year_ago)
 
-        for shoe in list(incomming_last_year) + list(in_storage_last_year) + list(sold_last_year):
+        for shoe in list(incomming_last_year):
             last_year[f'{shoe.order_date.month}.{shoe.order_date.year}']['costs'] += int(
                 shoe.buy_price)
+
+            last_year[f'{shoe.order_date.month}.{shoe.order_date.year}']['returned_tax'] += int(
+                0.23 * float(shoe.buy_price))
+
+        for shoe in list(in_storage_last_year) + list(sold_last_year):
+            last_year[f'{shoe.buy_invoice_date.month}.{shoe.buy_invoice_date.year}']['costs'] += int(
+                shoe.buy_price)
+
+            last_year[f'{shoe.buy_invoice_date.month}.{shoe.buy_invoice_date.year}']['returned_tax'] += int(
+                0.23 * float(shoe.buy_price))
 
         archives_last_year = SoldShoe.objects.filter(exit_date__gte=year_ago)
 
@@ -1922,9 +2073,9 @@ class Stats(LoginRequiredMixin, TemplateView):
         incomming_last_3_months = IncommingShoe.objects.filter(
             order_date__gte=three_months_ago)
         in_storage_last_3_months = InStorageShoe.objects.filter(
-            order_date__gte=three_months_ago)
+            buy_invoice_date__gte=three_months_ago)
         archives_last_3_months = SoldShoe.objects.filter(
-            order_date__gte=three_months_ago)
+            buy_invoice_date__gte=three_months_ago)
 
         for shoe in list(incomming_last_3_months) + list(in_storage_last_3_months) + list(archives_last_3_months):
             if shoe.seller:

@@ -1,0 +1,29 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<hr/>
+
+<!-- PUT ON AUCTION PAGE - OPTIONS -->
+<div class="create-incomming-wrapper">
+    <div class="link">
+        <a href="{% url 'put-on-auction-multiple' %}">
+            <div class="link-text">
+                WYSTAW NA SPRZEDAŻ
+            </div>
+        </a>
+    </div>
+
+    <div class="link">
+        <a href="{% url 'check-on-auction' %}">
+            <div class="link-text">
+                PRZEGLĄDAJ WYSTAWIONE
+            </div>
+        </a>
+    </div>
+</div>
+
+
+
+{% endblock content %}

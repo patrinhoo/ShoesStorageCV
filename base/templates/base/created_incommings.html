@@ -36,12 +36,16 @@
     <table class="overwiew-table">
         <tr class="table-header">
             <th>Nr</th>
-            <th>Email</th>
-            <th>Cena kupna</th>
+            <th>Data zamówienia</th>
+            <th>Data faktury kupna</th>
             <th>Nazwa produktu</th>
             <th>Rozmiar</th>
-            <th>Data zamówienia</th>
+            <th>CW</th>
             <th>Sprzedawca</th>
+            <th>Nr faktury kupna</th>
+            <th>Nr zamówienia</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
             <th>Komentarz</th>
         </tr>
     
@@ -50,12 +54,16 @@
 
         <tr>
             <th>{{forloop.counter}}</th>
-            <th>{{shoe.email}}</th>
-            <th>{{shoe.buy_price}}</th>
-            <th>{{shoe.name}}</th>
-            <th>{{shoe.size}}</th>
             <th>{{shoe.order_date|default:"--"}}</th>
-            <th>{{shoe.seller}}</th>
+            <th>{{shoe.buy_invoice_date|default:"--"}}</th>
+            <th>{{shoe.name|default:"--"}}</th>
+            <th>{{shoe.size|default:"--"}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.order_nr|default:"--"}}</th>
+            <th>{{shoe.email|default:"--"}}</th>
+            <th>{{shoe.buy_price|default:"--"}}</th>
             <th>{{shoe.comment|default:"--"}}</th>
         </tr>
 

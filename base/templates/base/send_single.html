@@ -22,13 +22,30 @@
 
         <label for="order_nr">Numer zamówienia</label><br>
         <input name="on" id="order_nr" type="text" value="{{request.GET.on}}" placeholder="Wpisz numer zamówienia"><br>
-        <label for="order_date">Data zamówienia</label><br>
-        <input name="od" id="order_date" type="date" value="{{request.GET.od}}" placeholder="Wybierz datę zamówienia"><br>
         <label for="entry_date">Data przyjęcia</label><br>
         <input name="ed" id="entry_date" type="date" value="{{request.GET.ed}}" placeholder="Wybierz datę przyjęcia"><br>
 
         <input type="submit" value="SZUKAJ">
     </form>
+</div>
+
+{% if object_list %}
+<div class="pagination">
+    <div class="previous-page">
+        {% if page_obj.has_previous %}
+        <a href="{% url 'send-single' %}?n={{request.GET.n}}&s={{request.GET.s}}&on={{request.GET.on}}&ed={{request.GET.ed}}&page={{page_obj.previous_page_number}}">&laquo; Poprzednia</a>
+        {% endif %}
+    </div>
+    
+    <div class="current-page">
+        Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+    </div>
+    
+    <div class="next-page">
+        {% if page_obj.has_next %}
+        <a href="{% url 'send-single' %}?n={{request.GET.n}}&s={{request.GET.s}}&on={{request.GET.on}}&ed={{request.GET.ed}}&page={{page_obj.next_page_number}}">Następna &raquo;</a>
+        {% endif %}
+    </div>
 </div>
 
 <div class="check-incomming-wrapper">
@@ -37,38 +54,36 @@
         <tr class="table-header">
             <th class="entry-in"></th>
             <th>Nr magazynowy</th>
-            <th>Email</th>
-            <th>Cena kupna</th>
+            <th>Data przyjęcia</th>
+            <th>Data faktury kupna</th>
             <th>Nazwa produktu</th>
             <th>Rozmiar</th>
             <th>CW</th>
-            <th>Numer zamówienia</th>
-            <th>Data zamówienia</th>
             <th>Sprzedawca</th>
-            <th>Komentarz</th>
-            <th>Data przyjęcia</th>
             <th>Nr faktury kupna</th>
-            <th>Data faktury kupna</th>
+            <th>Nr zamówienia</th>
+            <th>Email</th>
+            <th>Cena kupna</th>
+            <th>Komentarz</th>
         </tr>
     
 
-        {% for shoe in in_storage %}
+        {% for shoe in object_list %}
 
         <tr>
             <th class="entry-in"><a href="{% url 'create-single-send' shoe.id %}">WYŚLIJ</a></th>
             <th>{{shoe.storage_nr|default:"--"}}</th>
-            <th>{{shoe.email}}</th>
-            <th>{{shoe.buy_price}}</th>
-            <th>{{shoe.name}}</th>
-            <th>{{shoe.size}}</th>
-            <th>{{shoe.cw|default:"--"}}</th>
-            <th>{{shoe.order_nr|default:"--"}}</th>
-            <th>{{shoe.order_date|default:"--"}}</th>
-            <th>{{shoe.seller|default:"--"}}</th>
-            <th>{{shoe.comment|default:"--"}}</th>
             <th>{{shoe.entry_date|default:"--"}}</th>
-            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
             <th>{{shoe.buy_invoice_date|default:"--"}}</th>
+            <th>{{shoe.name|default:"--"}}</th>
+            <th>{{shoe.size|default:"--"}}</th>
+            <th>{{shoe.cw|default:"--"}}</th>
+            <th>{{shoe.seller|default:"--"}}</th>
+            <th>{{shoe.buy_invoice_nr|default:"--"}}</th>
+            <th>{{shoe.order_nr|default:"--"}}</th>
+            <th>{{shoe.email|default:"--"}}</th>
+            <th>{{shoe.buy_price}}</th>
+            <th>{{shoe.comment|default:"--"}}</th>
         </tr>
 
         {% endfor %}
@@ -76,5 +91,7 @@
     </table>
 
 </div>
+
+{% endif %}
 
 {% endblock content %}
